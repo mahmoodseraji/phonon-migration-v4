@@ -289,7 +289,8 @@ async function deleteDownloadedVoices(){
   terminateNeuralWorker();
   await deleteAllNeuralVoices();
   const remaining=await getVoiceStorageStatus();
-  if(remaining.modelReady||remaining.anyDownloaded)throw new Error('Some Phonon model files are still present in browser storage.');
+  if(!remaining.cacheAvailable)throw new Error('Browser Cache Storage is unavailable, so deletion could not be verified.');
+  if(remaining.anyCachedFiles||remaining.modelReady||remaining.anyDownloaded)throw new Error('Some Phonon model files are still present in browser storage.');
   for(const id of Object.keys(voiceModelReady))voiceModelReady[id]=false;
   settings.germanVoiceMode='system';settings.englishVoiceMode='system';
   await Promise.all([setSetting('germanVoiceMode','system'),setSetting('englishVoiceMode','system')]);
