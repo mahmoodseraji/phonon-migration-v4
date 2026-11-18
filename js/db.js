@@ -88,8 +88,8 @@ export function putReviewResult(word, logEntries = []) {
 }
 
 
-/** Delete vocabulary and all linked review logs in one IndexedDB transaction. */
-export function deleteWordsAndLogs(wordIds, logIds) {
+/** Delete vocabulary and every linked review log in one IndexedDB transaction. */
+export function deleteWordsAndLogs(wordIds) {
   return new Promise((resolve, reject) => {
     if (!dbRef) { reject(new Error('Database is not open.')); return; }
     let tx;
@@ -98,7 +98,16 @@ export function deleteWordsAndLogs(wordIds, logIds) {
       const wordStore = tx.objectStore('words');
       const logStore = tx.objectStore('reviewLogs');
       for (const id of wordIds) wordStore.delete(id);
-      for (const id of logIds) logStore.delete(id);
+      const logsRequest = logStore.getAll();
+      logsRequest.onsuccess = () => {
+        const ids = new Set(wordIds);
+        for (const entry of logsRequest.result || []) {
+          if (ids.has(entry.wordId)) logStore.delete(entry.id);
+        }
+      };
+      logsRequest.onerror = () => {
+        try { tx.abort(); } catch { /* transaction may already have aborted */ }
+      };
     } catch (error) { reject(error); return; }
     tx.oncomplete = () => resolve();
     tx.onabort = tx.onerror = () => reject(tx.error || new Error('Could not delete vocabulary and its review history.'));
