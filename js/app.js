@@ -301,7 +301,7 @@ async function deleteDownloadedVoices(){
   toast('Voice deletion failed.');
  }finally{voiceDownloadRunning=false;renderVoiceSettings();}
 }
-async async function speak(text,language='de',voiceOverride=null){
+async function speak(text,language='de',voiceOverride=null){
  if(!text?.trim())return toast(language==='de'?'No German text available.':'No English text available.');const voice=voiceOverride||(language==='de'?(settings.germanVoiceMode||'system'):(settings.englishVoiceMode||'system'));
  if(voice!=='system'){
   if(!voiceModelReady[voice]){setVoiceStatus('This Phonon voice is not installed. Download it before testing or using it.');toast('This voice is not downloaded yet. Select it and use “Download selected voices”.');return;}
