@@ -23,6 +23,10 @@ test('downloads only selected voices, retains system fallback, and removes Phono
  assert.match(app,/System voice remains available/);
  assert.match(manager,/cache\.delete\(url\)/);
  assert.match(manager,/deleteAllNeuralVoices/);
+ assert.match(manager,/cacheAvailable: !!cache/);
+ assert.match(manager,/anyCachedFiles: modelChecks\.some\(Boolean\) \|\| voiceChecks\.some\(Boolean\)/);
+ assert.match(app,/!remaining\.cacheAvailable/);
+ assert.match(app,/remaining\.anyCachedFiles/);
  assert.match(manager,/CACHE_NAME = 'phonon-tts-v1'/);
 });
 test('uses the official API and Web Audio playback',()=>{
