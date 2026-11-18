@@ -1,16 +1,21 @@
-# Deutsch Meister 3.7.0
+# Deutsch Meister 3.8.0
 
 Deutsch Meister is an offline-first German vocabulary PWA. It contains no bundled vocabulary: learners add words manually or import their own CSV/TSV files.
 
-## What's new in 3.7.0 — Phonon pronunciation
+## What's new in 3.8.0
 
-- Replaces the old Piper pronunciation engine with the official browser runtime `phonon-tts` 0.4.2.
-- Offers four auditionable voices: Nele and Anton (German), Zoey and Easton (US English).
-- Keeps independent German and English voice selections. Samples are small static OGG files and can be played before downloading the model.
-- Neural downloads are user-initiated. The shared multilingual q8 model is downloaded once; only the selected voice embeddings are loaded.
-- System speech remains immediately available and is used as a fallback if Phonon cannot play.
-- Downloaded model and voice files can be deleted without affecting vocabulary or learning progress.
-- The runtime is vendored locally so its JavaScript and WebAssembly files are available offline after the app shell has been installed.
+- Imported CSV batches can be exported with stable word IDs, corrected and updated in place.
+- Retained entries keep their IDs, Leitner and SM-2 schedules, review logs and batch metadata. New entries get fresh schedules; removed entries are shown for confirmation and their review logs are deleted only after confirmation.
+- Batch updates detect duplicate German words, duplicate IDs, IDs from other batches and collisions with words outside the selected batch before any changes are saved.
+- Batch updates write vocabulary changes and remove linked logs in one IndexedDB transaction.
+- Settings now tests each Phonon voice through the same on-device model, speaker embedding and playback path used for normal pronunciation.
+- Selected Phonon voices no longer silently fall back to browser speech. Choose System voice explicitly when you want the browser's speech engine.
+
+## Phonon pronunciation
+
+Four on-device voices are available: Nele and Anton (German), Zoey and Easton (US English). Neural downloads are user-initiated. The shared multilingual q8 model is downloaded once; only selected voice embeddings are loaded. Downloaded model and voice files can be deleted without affecting vocabulary or learning progress.
+
+The runtime is vendored locally so its JavaScript and WebAssembly files are available offline after the app shell has been installed.
 
 ### Install the local Phonon runtime
 
@@ -23,11 +28,11 @@ npm run vendor:phonon
 
 This copies the exact pinned `phonon-tts@0.4.2` package, including its WebAssembly modules and licence notices, into `vendor/phonon-tts`. Commit that generated directory when preparing the static GitHub Pages release. The script refuses to vendor a different runtime version.
 
-The Phonon 40M multilingual checkpoint and voice catalogue assets are already stored in `models/phonon` and `assets/voice-samples`. The model is CC BY-NC 4.0 and must not be used commercially without appropriate permission. See `PHONON-LICENSE-NOTICE.md` and `PHONON-RUNTIME-NOTICE.md`.
+The Phonon 40M multilingual checkpoint and voice embeddings are stored in `models/phonon`. The model is CC BY-NC 4.0 and must not be used commercially without appropriate permission. See `PHONON-LICENSE-NOTICE.md` and `PHONON-RUNTIME-NOTICE.md`.
 
 ## Build automation
 
-The migration branch CI vendors the pinned runtime, runs syntax and regression checks, and commits the generated `vendor/phonon-tts` files to this branch after successful checks. The `main` branch is not modified. The vendored package is checked against the exact 0.4.2 version.
+GitHub Actions runs the syntax checks and automated regression suite on pushes to `main`. The release checks also verify the vendored Phonon runtime and required WebAssembly assets.
 
 ## Existing learning features
 
