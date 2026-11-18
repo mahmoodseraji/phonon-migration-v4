@@ -68,12 +68,19 @@ async function cacheHas(cache, url) {
 export async function getVoiceStorageStatus() {
   const cache = await openPhononCache();
   const modelChecks = await Promise.all(Object.values(MODEL_URLS).map(url => cacheHas(cache, url)));
-  const modelReady = modelChecks.every(Boolean);
+  const modelReady = !!cache && modelChecks.every(Boolean);
   const voices = {};
   for (const [id, voice] of Object.entries(VOICE_CATALOG)) {
     voices[id] = modelReady && await cacheHas(cache, VOICE_URLS[voice.name]);
   }
-  return { modelReady, voices, anyDownloaded: Object.values(voices).some(Boolean) };
+  const voiceChecks = await Promise.all(Object.values(VOICE_URLS).map(url => cacheHas(cache, url)));
+  return {
+    cacheAvailable: !!cache,
+    modelReady,
+    voices,
+    anyDownloaded: Object.values(voices).some(Boolean),
+    anyCachedFiles: modelChecks.some(Boolean) || voiceChecks.some(Boolean)
+  };
 }
 
 function assertVoice(voiceId, language) {
