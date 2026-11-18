@@ -22,7 +22,9 @@ test('settings are whitelisted before use, so a bad backup cannot brick startup'
 
 test('restore validates the file and normalises schedules in one atomic write', () => {
   assert.match(app, /not valid JSON/);
-  assert.match(app, /putMany\('words',prepared\)/);
+  assert.match(app, /mergeBackupRecords\(\{words:prepared,reviewLogs:goodLogs,sessions:goodSessions,settings:settingRecords,collections:goodCollections\}\)/);
+  assert.match(db, /export function mergeBackupRecords/);
+  assert.match(db, /transaction\(stores, 'readwrite'\)/);
   assert.match(app, /earliest valid history start/);
   assert.match(app, /existingStart<backupStart\?existingStart:backupStart/);
 });
@@ -40,7 +42,7 @@ test('swipe classes are reset for each card and the swipe animation is not overr
   assert.match(css, /#studyCard\.swipe-left \.study-card-scene/);
 });
 
-test('service worker cache is versioned 3.6.7 and navigation ignores query strings', () => {
+test('service worker cache is versioned 3.7.0 and navigation ignores query strings', () => {
   assert.match(sw, /deutsch-meister-v3\.7\.0/);
   assert.match(sw, /ignoreSearch/);
 });
