@@ -48,13 +48,13 @@ test('Progress includes requested metrics and one selected-method distribution',
   assert.match(app, /distributionFor\(active,method,logs\)/);
 });
 
-test('IndexedDB schema remains version 2 and existing stores are retained', () => {
+test('IndexedDB schema upgrades to version 3 while retaining existing stores and existing stores are retained', () => {
   assert.match(db, /indexedDB\.open\(DB_NAME, 2\)/);
   for (const store of ['words', 'settings', 'reviewLogs', 'sessions', 'collections']) assert.match(db, new RegExp(`objectStoreNames\.contains\\('${store}'\\)`));
 });
 
 test('service worker cache is bumped and precaches the new study-session module', () => {
-  assert.match(sw, /deutsch-meister-v3\.8\.0/);
+  assert.match(sw, /deutsch-meister-v3\.9\.0/);
   assert.match(sw, /study-session\.js/);
   assert.match(sw, /flashcard\.js/);
 });
