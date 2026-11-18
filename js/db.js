@@ -3,7 +3,7 @@ let dbRef;
 
 export function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 2);
+    const req = indexedDB.open(DB_NAME, 3);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains('words')) db.createObjectStore('words', { keyPath: 'id' });
@@ -14,6 +14,9 @@ export function openDB() {
       }
       if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'id' });
       if (!db.objectStoreNames.contains('collections')) db.createObjectStore('collections', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('stories')) db.createObjectStore('stories', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('storyProgress')) db.createObjectStore('storyProgress', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('storyEncountered')) db.createObjectStore('storyEncountered', { keyPath: 'id' });
     };
     req.onsuccess = () => {
       const db = req.result;
