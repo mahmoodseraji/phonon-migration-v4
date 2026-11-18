@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phonon-migration-v3.7.0
+      - main
   pull_request:
     branches:
       - main
