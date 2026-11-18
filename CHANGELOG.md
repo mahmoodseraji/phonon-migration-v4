@@ -1,3 +1,11 @@
+## 3.9.0 — Stories reading workspace
+
+- Added DOCX and TXT story import, including direct loading of the repository's `Deutsc_geschafte.docx`.
+- Detects Teil/season and Kapitel headings and preserves paragraph formatting.
+- Added interactive word lookup against personal vocabulary, pronunciation, paragraph playback, sentence-by-sentence playback, adjustable speed and live sentence highlighting.
+- Tracks encountered words, reading position and chapter completion in three dedicated IndexedDB stores. Story activity is isolated from Leitner/SM-2 schedules and review history.
+- Added a separate Stories destination while preserving existing vocabulary, review data and algorithms.
+
 ## 3.8.0 — Safe batch correction and true voice previews
 
 - Added per-import batch CSV export with stable word IDs and an update workflow for correcting an existing import.
