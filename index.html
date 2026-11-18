@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/app.css">
-  <title>Deutsch Meister 3.8.0</title>
+  <title>Deutsch Meister 3.9.0</title>
 </head>
 <body>
 <div class="app-shell">
@@ -67,6 +67,17 @@
       </article>
       <div id="learnEmpty" class="empty-state" hidden><h2 id="learnEmptyTitle">You're all caught up</h2><p id="learnEmptyText">There are no words due right now. Add vocabulary or come back later.</p><button class="button button-outline" data-action="go-library">Open library</button></div>
       <div id="sessionProgress" class="muted session-progress" hidden></div>
+    </section>
+
+    <section class="view" id="storiesView" data-view="stories">
+      <div class="page-heading"><h1>Stories</h1><p>Read your own German stories, listen sentence by sentence and explore words in context.</p></div>
+      <section id="storyLibrary"><div class="library-toolbar"><span class="muted">Your reading library</span><div class="toolbar-actions"><button class="button button-outline" id="storyLoadRepository" type="button">Load Deutsc_geschafte.docx</button><button class="button button-primary" id="storyImportOpen" type="button">＋ Import story</button></div></div>
+        <input id="storyImportFile" type="file" accept=".docx,.txt,text/plain" hidden><div id="storyList" class="story-list"></div></section>
+      <section id="storyReader" class="story-reader" hidden><button class="text-button story-back" id="storyBack" type="button">← Back to stories</button>
+        <div class="page-heading"><span class="eyebrow" id="storyReaderSubtitle"></span><h1 id="storyReaderTitle">Chapter</h1><p>Tap any word for vocabulary details. Reading and listening never affect your review schedule.</p></div>
+        <div class="story-audio-toolbar"><button class="button button-primary" id="storyPlayAll" type="button">▶ Listen to chapter</button><button class="button button-outline" id="storyRepeatSentence" type="button">↻ Repeat sentence</button><button class="button button-outline" id="storyStop" type="button">Stop</button><label>Speed <select id="storySpeechRate" class="field"><option value="0.65">0.65×</option><option value="0.75">0.75×</option><option value="0.88" selected>0.88×</option><option value="1">1.0×</option><option value="1.1">1.1×</option><option value="1.25">1.25×</option></select></label></div>
+        <div id="storyWordInfo" class="story-word-info" hidden></div><article id="storyReaderContent" class="story-reader-content"></article>
+        <div class="story-completion"><p class="muted small">Chapter completion is tracked separately from vocabulary reviews.</p><button class="button button-primary full" id="storyCompleteChapter" type="button">Mark chapter complete</button></div></section>
     </section>
 
     <section class="view" id="practiceView" data-view="practice">
@@ -156,7 +167,7 @@
         <button class="text-button" id="resetProgress">Reset learning progress (keep words)</button>
         <div class="danger-zone"><p>Delete all manually added and imported vocabulary.</p><button class="button button-danger" id="deletePersonalWords">Delete all vocabulary</button></div>
       </section>
-      <p class="app-version">DEUTSCH MEISTER · VERSION 3.8.0</p>
+      <p class="app-version">DEUTSCH MEISTER · VERSION 3.9.0</p>
     </section>
   </main>
 
@@ -171,6 +182,7 @@
 
   <nav class="bottom-nav" aria-label="Main navigation">
     <button class="nav-item active" data-nav="home"><span>⌂</span><small>Home</small></button>
+    <button class="nav-item" data-nav="stories"><span>▤</span><small>Stories</small></button>
     <button class="nav-item" data-nav="practice"><span>✳</span><small>Practice</small></button>
     <button class="nav-item" data-nav="library"><span>▦</span><small>Library</small></button>
     <button class="nav-item" data-nav="progress"><span>◴</span><small>Progress</small></button>
