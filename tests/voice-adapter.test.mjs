@@ -37,5 +37,5 @@ test('uses the official API and Web Audio playback',()=>{
 });
 test('service worker precaches the vendored runtime',()=>{
  for(const file of ['index.js','worker.js','phonon_tts_simd_bg.wasm'])assert.ok(sw.includes(file),file);
- assert.match(sw,/deutsch-meister-v3\.8\.0/);
+ assert.match(sw,/deutsch-meister-v3\.9\.0/);
 });
