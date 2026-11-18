@@ -1,4 +1,13 @@
-# Deutsch Meister 3.8.0
+# Deutsch Meister 3.9.0
+
+## What's new in 3.9.0
+
+- Added a personal Stories library with DOCX and plain-text import. The repository story `Deutsc_geschafte.docx` can be loaded directly from the app.
+- Detects `Teil` and `Kapitel` headings and preserves paragraph boundaries.
+- Added tap-to-look-up words, personal-vocabulary matching, pronunciation, paragraph and sentence playback, adjustable speed and spoken-sentence highlighting.
+- Tracks encountered words, reading position and completed chapters in separate IndexedDB stores. Story activity never changes Leitner or SM-2 review dates, schedules or review history.
+- Existing vocabulary and review stores remain untouched; IndexedDB is upgraded additively.
+
 
 Deutsch Meister is an offline-first German vocabulary PWA. It contains no bundled vocabulary: learners add words manually or import their own CSV/TSV files.
 
