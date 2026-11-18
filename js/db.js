@@ -86,3 +86,41 @@ export function putReviewResult(word, logEntries = []) {
     tx.onabort = tx.onerror = () => reject(tx.error || new Error('Could not save the review.'));
   });
 }
+
+
+/** Delete vocabulary and all linked review logs in one IndexedDB transaction. */
+export function deleteWordsAndLogs(wordIds, logIds) {
+  return new Promise((resolve, reject) => {
+    if (!dbRef) { reject(new Error('Database is not open.')); return; }
+    let tx;
+    try {
+      tx = dbRef.transaction(['words', 'reviewLogs'], 'readwrite');
+      const wordStore = tx.objectStore('words');
+      const logStore = tx.objectStore('reviewLogs');
+      for (const id of wordIds) wordStore.delete(id);
+      for (const id of logIds) logStore.delete(id);
+    } catch (error) { reject(error); return; }
+    tx.oncomplete = () => resolve();
+    tx.onabort = tx.onerror = () => reject(tx.error || new Error('Could not delete vocabulary and its review history.'));
+  });
+}
+
+/** Merge backup records across all supported stores atomically. */
+export function mergeBackupRecords(recordsByStore) {
+  const allowed = ['words', 'reviewLogs', 'sessions', 'settings', 'collections'];
+  const stores = Object.keys(recordsByStore).filter(name => allowed.includes(name));
+  if (!stores.length) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    if (!dbRef) { reject(new Error('Database is not open.')); return; }
+    let tx;
+    try {
+      tx = dbRef.transaction(stores, 'readwrite');
+      for (const name of stores) {
+        const store = tx.objectStore(name);
+        for (const record of recordsByStore[name] || []) store.put(record);
+      }
+    } catch (error) { reject(error); return; }
+    tx.oncomplete = () => resolve();
+    tx.onabort = tx.onerror = () => reject(tx.error || new Error('Backup restore transaction failed.'));
+  });
+}
