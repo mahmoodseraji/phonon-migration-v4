@@ -44,19 +44,16 @@ test('the redesigned pages remove redundant home shortcuts and library filters',
   assert.match(html, /id="progressDue"/);
 });
 
-test('V3.7.0 exposes Phonon sample playback, voice selection and cache deletion', async () => {
-  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
-  const manager = await readFile(new URL('../js/voice-manager.js', import.meta.url), 'utf8');
-  for (const id of ['nele','anton','zoey','easton']) assert.ok(html.includes('voice-samples/' + id + '.ogg'));
-  assert.match(html, /id="downloadVoiceModels"/);
-  assert.match(html, /id="deleteVoiceModels"/);
-  assert.match(app, /downloadSelectedVoices/);
-  assert.match(app, /deleteDownloadedVoices/);
-  assert.match(manager, /deleteAllNeuralVoices/);
-  assert.doesNotMatch(app + manager, /deleteNeuralVoice|voiceModelsDisabled/);
+test('V3.8.0 exposes live Phonon voice previews, voice selection and cache deletion', async () => {
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+ const app=await readFile(new URL('../js/app.js',import.meta.url),'utf8');
+ const manager=await readFile(new URL('../js/voice-manager.js',import.meta.url),'utf8');
+ for(const id of ['nele','anton','zoey','easton'])assert.ok(html.includes('data-voice-preview="'+id+'"'));
+ assert.match(html,/id="downloadVoiceModels"/);assert.match(html,/id="deleteVoiceModels"/);
+ assert.match(app,/downloadSelectedVoices/);assert.match(app,/deleteDownloadedVoices/);
+ assert.match(app,/speakNeural\(voice,text/);assert.match(manager,/deleteAllNeuralVoices/);
+ assert.doesNotMatch(html,/assets\/voice-samples\/.*\.ogg/);
 });
-
 test('V3.6.2 keeps the home dashboard separate from a full-screen flip-card review', () => {
   assert.match(html, /id="studyCardInner"/);
   assert.match(html, /class="study-card-face study-card-front"/);
@@ -105,7 +102,7 @@ test('Leitner review presents two outcomes while SM-2 presents four ratings', ()
 
 test('imported CSV batches can be exported and safely updated by stable ID', async () => {
  const db=await readFile(new URL('../js/db.js',import.meta.url),'utf8');
- assert.match(html,/data-export-import-batch/);assert.match(html,/data-update-import-batch/);
+ assert.match(app,/data-export-import-batch/);assert.match(app,/data-update-import-batch/);
  assert.match(app,/function updateImportBatch/);assert.match(app,/row\.id/);
  assert.match(app,/Duplicate word in CSV/);assert.match(app,/already exists outside this batch/);
  assert.match(db,/function replaceImportBatch/);assert.match(db,/transaction\(\['words','reviewLogs'\],'readwrite'\)/);
