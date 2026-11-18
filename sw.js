@@ -7,8 +7,6 @@ const CORE = [
   './js/app.js', './js/csv.js', './js/db.js',
   './js/scheduler.js', './js/study-session.js', './js/flashcard.js', './js/challenges.js', './js/voice-manager.js',
   './assets/icon-192.png', './assets/icon-512.png',
-  './assets/voice-samples/nele.ogg', './assets/voice-samples/anton.ogg',
-  './assets/voice-samples/zoey.ogg', './assets/voice-samples/easton.ogg',
 ];
 const OPTIONAL_RUNTIME = [
   './vendor/phonon-tts/index.js', './vendor/phonon-tts/worker.js',
