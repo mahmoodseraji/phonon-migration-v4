@@ -3,6 +3,7 @@ name: Phonon migration checks
 on:
   push:
     branches:
+      - main
       - phonon-migration-v3.7.0
   pull_request:
     branches:
