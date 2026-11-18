@@ -49,7 +49,7 @@ test('Progress includes requested metrics and one selected-method distribution',
 });
 
 test('IndexedDB schema upgrades to version 3 while retaining existing stores and existing stores are retained', () => {
-  assert.match(db, /indexedDB\.open\(DB_NAME, 2\)/);
+  assert.match(db, /indexedDB\.open\(DB_NAME, 3\)/);
   for (const store of ['words', 'settings', 'reviewLogs', 'sessions', 'collections']) assert.match(db, new RegExp(`objectStoreNames\.contains\\('${store}'\\)`));
 });
 
