@@ -101,3 +101,13 @@ test('Leitner review presents two outcomes while SM-2 presents four ratings', ()
   assert.match(html, /data-rating="hard"/);
   assert.match(html, /data-rating="easy"/);
 });
+
+
+test('imported CSV batches can be exported and safely updated by stable ID', async () => {
+ const db=await readFile(new URL('../js/db.js',import.meta.url),'utf8');
+ assert.match(html,/data-export-import-batch/);assert.match(html,/data-update-import-batch/);
+ assert.match(app,/function updateImportBatch/);assert.match(app,/row\.id/);
+ assert.match(app,/Duplicate word in CSV/);assert.match(app,/already exists outside this batch/);
+ assert.match(db,/function replaceImportBatch/);assert.match(db,/transaction\(\['words','reviewLogs'\],'readwrite'\)/);
+});
+test('failed Phonon playback does not silently switch to a system voice',()=>{assert.match(app,/No voice fallback was used/);assert.match(app,/This voice is not downloaded yet/);});

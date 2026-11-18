@@ -10,10 +10,10 @@ const MODEL_URLS = Object.freeze({
 });
 
 export const VOICE_CATALOG = Object.freeze({
-  nele:   { name: 'Nele',   language: 'de', sample: '../assets/voice-samples/nele.ogg', label: 'Nele · German · female' },
-  anton:  { name: 'Anton',  language: 'de', sample: '../assets/voice-samples/anton.ogg', label: 'Anton · German · male' },
-  zoey:   { name: 'Zoey',   language: 'en', sample: '../assets/voice-samples/zoey.ogg', label: 'Zoey · English · female' },
-  easton: { name: 'Easton', language: 'en', sample: '../assets/voice-samples/easton.ogg', label: 'Easton · English · male' }
+  nele:   { name: 'Nele',   language: 'de', label: 'Nele · German · female' },
+  anton:  { name: 'Anton',  language: 'de', label: 'Anton · German · male' },
+  zoey:   { name: 'Zoey',   language: 'en', label: 'Zoey · English · female' },
+  easton: { name: 'Easton', language: 'en', label: 'Easton · English · male' }
 });
 
 const VOICE_URLS = Object.freeze({

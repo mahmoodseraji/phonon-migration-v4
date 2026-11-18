@@ -1,3 +1,16 @@
+## 3.8.0 — Safe batch correction and true voice previews
+
+- Added per-import batch CSV export with stable word IDs and an update workflow for correcting an existing import.
+- Batch updates preserve IDs, both independent learning schedules, review logs, creation dates and batch metadata for retained words.
+- New rows receive new IDs and fresh schedules; removed rows are listed in a confirmation prompt and their linked review logs are deleted only after confirmation.
+- Rejects duplicate words in the update file, IDs belonging to another batch, and collisions with vocabulary outside the selected batch before writing anything.
+- Persists all retained/new word writes and removed-word/review-log deletions in one IndexedDB transaction.
+- Replaced prerecorded voice samples with live preview buttons using the same Phonon model, speaker embedding, speech rate and playback pipeline as normal pronunciation.
+- Removed silent system-voice fallback for selected Phonon voices. Missing or failed Phonon playback reports the error; users must explicitly choose System voice to use browser speech.
+- Preserved the existing IndexedDB schema, learning algorithms, review history, app layout and voice catalog.
+
+**Validation note:** physical iPhone/Safari playback has not been verified by this source update. Test with an exported sample batch and on the target device before relying on the changes for important data.
+
 ## 3.7.0 — Phonon pronunciation migration
 
 - Replaced Piper voice coordination with the official pinned `phonon-tts` 0.4.2 browser runtime adapter.

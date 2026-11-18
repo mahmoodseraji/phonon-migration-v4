@@ -327,3 +327,9 @@ body.reviewing-session #studyCard.is-flipped .study-card-front .sound-button {
   pointer-events: none !important;
 }
 
+
+
+/* Batch maintenance controls remain usable on narrow mobile screens. */
+.import-batch-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.import-batch-actions .button{white-space:nowrap;}
+@media(max-width:560px){.import-batch-row{align-items:flex-start;flex-direction:column;gap:10px}.import-batch-actions{width:100%}.import-batch-actions .button{flex:1 1 auto;}}

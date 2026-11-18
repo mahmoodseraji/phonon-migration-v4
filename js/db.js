@@ -114,6 +114,15 @@ export function deleteWordsAndLogs(wordIds) {
   });
 }
 
+/** Atomically replace one imported batch and delete logs only for removed word IDs. */
+export function replaceImportBatch(batchId, wordsToPut, removedWordIds = []) {
+ return new Promise((resolve,reject)=>{
+  if(!dbRef){reject(new Error('Database is not open.'));return;}let tx;
+  try{tx=dbRef.transaction(['words','reviewLogs'],'readwrite');const wordStore=tx.objectStore('words'),logStore=tx.objectStore('reviewLogs');for(const word of wordsToPut)wordStore.put(word);for(const id of removedWordIds)wordStore.delete(id);if(removedWordIds.length){const req=logStore.getAll();req.onsuccess=()=>{const ids=new Set(removedWordIds);for(const log of req.result||[])if(ids.has(log.wordId))logStore.delete(log.id);};req.onerror=()=>{try{tx.abort();}catch{}};}}
+  catch(error){reject(error);return;}tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error||new Error('Could not update the imported batch.'));
+ });
+}
+
 /** Merge backup records across all supported stores atomically. */
 export function mergeBackupRecords(recordsByStore) {
   const allowed = ['words', 'reviewLogs', 'sessions', 'settings', 'collections'];

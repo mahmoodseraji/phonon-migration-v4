@@ -18,9 +18,9 @@ test('supports four named voices and independent language selection',()=>{
  assert.match(app,/\['system','nele','anton'\]/);
  assert.match(app,/\['system','zoey','easton'\]/);
 });
-test('downloads only selected voices, retains system fallback, and removes Phonon cache',()=>{
+test('downloads only selected voices, keeps system speech explicit, and removes Phonon cache',()=>{
  assert.match(app,/downloadNeuralVoice\(id/);
- assert.match(app,/System voice remains available/);
+ assert.match(app,/No voice fallback was used/);
  assert.match(manager,/cache\.delete\(url\)/);
  assert.match(manager,/deleteAllNeuralVoices/);
  assert.match(manager,/cacheAvailable: !!cache/);
@@ -35,7 +35,7 @@ test('uses the official API and Web Audio playback',()=>{
  assert.match(manager,/tts\.dispose\(\)/);
  assert.match(manager,/decodeAudioData/);
 });
-test('service worker precaches the vendored runtime and four static samples',()=>{
- for(const file of ['index.js','worker.js','phonon_tts_simd_bg.wasm','nele.ogg','anton.ogg','zoey.ogg','easton.ogg'])assert.ok(sw.includes(file),file);
- assert.match(sw,/deutsch-meister-v3\.7\.0/);
+test('service worker precaches the vendored runtime',()=>{
+ for(const file of ['index.js','worker.js','phonon_tts_simd_bg.wasm'])assert.ok(sw.includes(file),file);
+ assert.match(sw,/deutsch-meister-v3\.8\.0/);
 });

@@ -134,17 +134,11 @@
         <label class="setting-row"><span>Speech speed</span><select id="speechRate" class="field"><option value="0.75">Slow</option><option value="0.88">Normal</option><option value="1">Fast</option></select></label>
       </section>
       <section class="settings-section"><h2>Pronunciation</h2>
-        <p class="muted small">Listen to the short samples before choosing. System voices work immediately. Phonon voices are downloaded only when you request them.</p>
+        <p class="muted small">Test each Phonon voice using the same on-device model and speaker embedding used for normal playback. A voice must be downloaded before its test can play. System speech is available when explicitly selected.</p>
         <label class="setting-row"><span>German voice</span><select id="germanSpeechVoice" class="field"><option value="system">System voice</option><option value="nele">Nele · Female</option><option value="anton">Anton · Male</option></select></label>
-        <div class="voice-sample-grid">
-          <div class="voice-sample"><div><b>Nele</b><small>German · female</small></div><audio controls preload="none" src="./assets/voice-samples/nele.ogg" aria-label="Nele German voice sample"></audio></div>
-          <div class="voice-sample"><div><b>Anton</b><small>German · male</small></div><audio controls preload="none" src="./assets/voice-samples/anton.ogg" aria-label="Anton German voice sample"></audio></div>
-        </div>
+        <div class="voice-sample-grid"><div class="voice-sample"><div><b>Nele</b><small>German · female · Phonon</small></div><button class="button button-outline" type="button" data-voice-preview="nele">Test Nele</button></div><div class="voice-sample"><div><b>Anton</b><small>German · male · Phonon</small></div><button class="button button-outline" type="button" data-voice-preview="anton">Test Anton</button></div></div>
         <label class="setting-row"><span>English voice</span><select id="englishSpeechVoice" class="field"><option value="system">System voice</option><option value="zoey">Zoey · Female</option><option value="easton">Easton · Male</option></select></label>
-        <div class="voice-sample-grid">
-          <div class="voice-sample"><div><b>Zoey</b><small>US English · female</small></div><audio controls preload="none" src="./assets/voice-samples/zoey.ogg" aria-label="Zoey English voice sample"></audio></div>
-          <div class="voice-sample"><div><b>Easton</b><small>US English · male</small></div><audio controls preload="none" src="./assets/voice-samples/easton.ogg" aria-label="Easton English voice sample"></audio></div>
-        </div>
+        <div class="voice-sample-grid"><div class="voice-sample"><div><b>Zoey</b><small>US English · female · Phonon</small></div><button class="button button-outline" type="button" data-voice-preview="zoey">Test Zoey</button></div><div class="voice-sample"><div><b>Easton</b><small>US English · male · Phonon</small></div><button class="button button-outline" type="button" data-voice-preview="easton">Test Easton</button></div></div>
         <div id="voiceDownloadStatus" class="status-line" aria-live="polite">System voices are ready. Choose a sample, then select and download your preferred Phonon voice.</div>
         <div id="voiceProgressTrack" class="voice-progress" hidden><span id="voiceProgressBar"></span></div>
         <div class="voice-actions"><button class="button button-outline" id="downloadVoiceModels" hidden>Download selected voices</button><button class="button button-outline" id="deleteVoiceModels" hidden>Delete downloaded voices</button></div>
@@ -158,11 +152,11 @@
       <section class="settings-section"><h2>Data and backup</h2>
         <div class="data-actions"><button class="button button-outline" id="exportJson">Export backup</button><label class="button button-outline file-button">Restore backup<input id="restoreJson" type="file" accept="application/json,.json"></label><button class="button button-outline" id="exportCsv">Export vocabulary CSV</button></div>
         <p id="dataStatus" class="status-line" aria-live="polite"></p>
-        <div class="import-batches"><h3>Imported CSV files</h3><p class="muted small">Delete one complete import without affecting other words.</p><div id="importBatchList" class="import-batch-list"></div></div>
+        <div class="import-batches"><h3>Imported CSV files</h3><p class="muted small">Export a batch CSV, keep its id column, correct the words, then update only that batch. Existing schedules and review history are preserved for matching IDs. Removed words require confirmation.</p><div id="importBatchList" class="import-batch-list"></div></div>
         <button class="text-button" id="resetProgress">Reset learning progress (keep words)</button>
         <div class="danger-zone"><p>Delete all manually added and imported vocabulary.</p><button class="button button-danger" id="deletePersonalWords">Delete all vocabulary</button></div>
       </section>
-      <p class="app-version">DEUTSCH MEISTER · VERSION 3.7.0</p>
+      <p class="app-version">DEUTSCH MEISTER · VERSION 3.8.0</p>
     </section>
   </main>
 
