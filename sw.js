@@ -1,10 +1,10 @@
-const CACHE = 'deutsch-meister-v3.8.0';
+const CACHE = 'deutsch-meister-v3.9.0';
 const RUNTIME_CACHE = 'phonon-tts-v1';
 const PREFIX = 'deutsch-meister-';
 const CORE = [
   './', './index.html', './manifest.json',
   './css/tokens.css', './css/app.css',
-  './js/app.js', './js/csv.js', './js/db.js',
+  './js/app.js', './js/csv.js', './js/db.js', './js/stories.js',
   './js/scheduler.js', './js/study-session.js', './js/flashcard.js', './js/challenges.js', './js/voice-manager.js',
   './assets/icon-192.png', './assets/icon-512.png',
 ];
