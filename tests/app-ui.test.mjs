@@ -5,9 +5,9 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 
-test('the simplified app has five main pages and four bottom navigation items', () => {
-  assert.equal((html.match(/class="view(?: active)?"/g) || []).length, 5);
-  assert.equal((html.match(/class="nav-item/g) || []).length, 4);
+test('the app has six main pages and five bottom navigation items', () => {
+  assert.equal((html.match(/class="view(?: active)?"/g) || []).length, 6);
+  assert.equal((html.match(/class="nav-item/g) || []).length, 5);
 });
 
 test('the interface has no CEFR or collection navigation', () => {
@@ -108,3 +108,13 @@ test('imported CSV batches can be exported and safely updated by stable ID', asy
  assert.match(db,/function replaceImportBatch/);assert.match(db,/transaction\(\['words','reviewLogs'\],'readwrite'\)/);
 });
 test('failed Phonon playback does not silently switch to a system voice',()=>{assert.match(app,/No voice fallback was used/);assert.match(app,/This voice is not downloaded yet/);});
+
+test('Stories provides a personal library, DOCX/TXT import, interactive reader and independent progress stores', async () => {
+ const db=await readFile(new URL('../js/db.js',import.meta.url),'utf8');
+ const stories=await readFile(new URL('../js/stories.js',import.meta.url),'utf8');
+ assert.match(html,/data-nav="stories"/);assert.match(html,/id="storyLoadRepository"/);assert.match(html,/id="storyImportFile"/);
+ assert.match(app,/function openStoryChapter/);assert.match(app,/function showStoryWord/);assert.match(app,/function playStorySentences/);
+ assert.match(db,/createObjectStore\('storyProgress'/);assert.match(db,/createObjectStore\('storyEncountered'/);
+ assert.match(stories,/export function parseStoryText/);assert.match(stories,/export async function extractDocxText/);
+ assert.match(app,/storyProgress/);assert.match(app,/storyEncountered/);
+});
