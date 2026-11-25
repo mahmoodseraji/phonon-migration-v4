@@ -359,3 +359,5 @@ body.reviewing-session #studyCard.is-flipped .study-card-front .sound-button {
  .story-audio-toolbar label { flex:0 0 auto; }
  .story-playback-status { flex-basis:100%; }
 }
+
+.story-word-info[hidden] { display:none !important; }
