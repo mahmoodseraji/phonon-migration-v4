@@ -30,6 +30,15 @@ test('Phonon Stories stream manageable chunks while playback proceeds instead of
   assert.match(voice, /if \(context\.state === 'suspended'\) await context\.resume\(\)/);
 });
 
+test('Phonon sentence highlighting follows the actual duration of each playing audio chunk', () => {
+  assert.match(voice, /onStage\(\{ type: 'chunk-start', text: item\.text, duration: item\.buffer\.duration/);
+  assert.match(app, /highlightNarrationChunk\(event\.text,event\.duration/);
+  assert.match(app, /currentStoryNarrationText\.indexOf\(normalised/);
+  assert.match(app, /elapsed\+=\(now-lastTick\)\/1000/);
+  assert.match(app, /storyPlaybackState!=='paused'/);
+  assert.doesNotMatch(app, /highlightEstimatedProgress/);
+});
+
 test('stopping or replacing speech cancels the active story sequence', () => {
   assert.match(voice, /function stopCurrentAudio\(\) \{\s*stopActiveSequence\(\);/);
   assert.match(voice, /export function stopNeuralSpeech\(\) \{\s*speechSequence\+\+;\s*stopActiveSequence\(\);/);
