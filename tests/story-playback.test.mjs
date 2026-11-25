@@ -19,9 +19,15 @@ test('Phonon Stories stream manageable chunks while playback proceeds instead of
   assert.match(voice, /function splitLongNarration/);
   assert.match(voice, /tts\.synthWav\(sourceSegments\[index\]/);
   assert.match(voice, /trimNarrationSilence/);
-  assert.match(voice, /const producer = \(async \(\) => \{/);\n  assert.match(voice, /async function takeSequenceBuffer/);\n  assert.match(voice, /sequence\.queue\.push\(\{ buffer, index: index \+ 1 \}\)/);\n  assert.match(voice, /await playSequenceBuffer\(sequence, item\.buffer\)/);\n  assert.doesNotMatch(voice, /const rendered = \[\]/);
+  assert.match(voice, /const producer = \(async \(\) => \{/);
+  assert.match(voice, /async function takeSequenceBuffer/);
+  assert.match(voice, /sequence\.queue\.push\(\{ buffer, index: index \+ 1 \}\)/);
+  assert.match(voice, /await playSequenceBuffer\(sequence, item\.buffer\)/);
+  assert.doesNotMatch(voice, /const rendered = \[\]/);
   assert.match(voice, /export function pauseNeuralSpeech/);
-  assert.match(voice, /export function resumeNeuralSpeech/);\n  assert.match(voice, /function startSequenceChunk/);\n  assert.match(voice, /if \(context\.state === 'suspended'\) await context\.resume\(\)/);
+  assert.match(voice, /export function resumeNeuralSpeech/);
+  assert.match(voice, /function startSequenceChunk/);
+  assert.match(voice, /if \(context\.state === 'suspended'\) await context\.resume\(\)/);
 });
 
 test('stopping or replacing speech cancels the active story sequence', () => {
