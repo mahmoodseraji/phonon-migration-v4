@@ -1,3 +1,12 @@
+# Deutsch Meister 3.13.0
+
+## What's new in 3.13.0
+
+- Flashcards automatically pronounce the German word when a new card appears. Flipping the card plays the German example sentence first, followed by the English word meaning; grammatical details are not narrated.
+- Any review rating immediately cancels active System or Phonon playback before the next card appears.
+- The back of each flashcard has an edit shortcut. It opens the existing vocabulary editor in a modal; saving updates the current card and library while preserving its ID, schedules and review history. The same card remains active and its audio is not restarted. Cancel leaves the saved entry untouched.
+- The Library search field uses a 16px focus size to prevent iOS Safari's automatic input zoom.
+
 # Deutsch Meister 3.9.0
 
 ## What's new in 3.9.0
