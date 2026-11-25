@@ -207,6 +207,7 @@ function getAudioContext() {
 }
 
 function stopCurrentAudio() {
+  stopActiveSequence();
   if (activeSource) {
     try { activeSource.stop(); } catch { /* already stopped */ }
     activeSource = null;
