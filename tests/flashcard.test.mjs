@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { conjugationRows, dictionaryHref } from '../js/flashcard.js';
+import { conjugationRows, dictionaryHref, studyPronunciationText } from '../js/flashcard.js';
 
 test('conjugation display contains only imported populated forms in the requested order', () => {
   const rows = conjugationRows({ presentIch: 'spreche', presentDu: '', presentEr: 'spricht', prateritum: 'sprach', perfekt: '', auxiliary: 'haben' });
@@ -19,4 +19,16 @@ test('conjugation display omits every empty form and returns no rows when none w
 test('Verbformen dictionary link is generated from the exact German vocabulary', () => {
   assert.equal(dictionaryHref('befinden (sich)'), 'https://www.verbformen.com/?w=befinden%20%28sich%29');
   assert.equal(dictionaryHref(''), '');
+});
+
+test('noun pronunciation includes the correct article without duplicating an existing article', () => {
+  assert.equal(studyPronunciationText({ german: 'Buch', article: 'das', partOfSpeech: 'noun' }), 'das Buch');
+  assert.equal(studyPronunciationText({ german: 'der Tisch', partOfSpeech: 'Nomen' }), 'der Tisch');
+  assert.equal(studyPronunciationText({ german: 'Zeitung', article: 'die', partOfSpeech: 'Substantiv' }), 'die Zeitung');
+});
+
+test('non-noun pronunciation leaves the vocabulary unchanged and inferred nouns receive articles', () => {
+  assert.equal(studyPronunciationText({ german: 'gehen', partOfSpeech: 'verb', article: '' }), 'gehen');
+  assert.equal(studyPronunciationText({ german: 'schnell', partOfSpeech: 'adjective', article: '' }), 'schnell');
+  assert.equal(studyPronunciationText({ german: 'Buch', article: 'das' }), 'das Buch');
 });
