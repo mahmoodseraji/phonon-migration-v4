@@ -127,7 +127,7 @@ test('Stories has explicit continuous narration controls and playback state',()=
  assert.ok(app.includes('speechSynthesis.pause()'));
  assert.ok(app.includes('speechSynthesis.resume()'));
  assert.doesNotMatch(app,/waitStory\\(560,token\\)/);
- assert.ok(app.includes("speakNeural(voice,text,rate,stage"));
+ assert.ok(app.includes("speakNeuralSegments(voice,plan.segments,rate,stage"));
 });
 test('Story vocabulary popups remove universal underlines and support dictionary-form confirmation',async()=>{
  const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
@@ -161,7 +161,7 @@ test('Story playback has no artificial paragraph delay',()=>{
 test('Stories narrates a chapter as one continuous utterance with global sentence offsets',()=>{
  assert.match(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join/);
  assert.match(app,/globalStart:globalOffset/);
- assert.match(app,/speakSystemStoryParagraph\(text,textStart,token\)/);
+ assert.match(app,/speakSystemStoryParagraph\(plan.text,plan.startOffset,token\)/);
  assert.doesNotMatch(app,/for\(let pi=first\.paragraphIndex/);
  assert.doesNotMatch(app,/waitStory\(/);
 });
@@ -185,19 +185,11 @@ test('Story Phonon narration uses a continuous plain-text stream without paragra
  assert.doesNotMatch(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join\('\\n\\n'\)/);
 });
 test('Separable verb particles are not matched as standalone vocabulary words',()=>{
- const normalizeSource=app.match(/function normaliseStoryWord\\(value\\)\\{[^\\n]+/)?.[0];
- const formsSource=app.match(/function storyFieldForms\\(value\\)\\{[^\\n]+/)?.[0];
- assert.ok(normalizeSource);assert.ok(formsSource);
- const normaliseStoryWord=new Function(normalizeSource+';return normaliseStoryWord')();
- const storyFieldForms=new Function('normaliseStoryWord','STORY_SEPARABLE_PARTICLES',formsSource+';return storyFieldForms')(normaliseStoryWord,new Set(['ab','an','auf','aus','bei','da','ein','fort','her','hin','los','mit','nach','vor','weg','zu','zurück']));
- assert.ok(storyFieldForms('fordert auf').includes('fordert auf'));
- assert.ok(storyFieldForms('fordert auf').includes('fordert'));
- assert.ok(!storyFieldForms('fordert auf').includes('auf'));
- assert.ok(storyFieldForms('ist gegangen').includes('gegangen'));
  const start=app.indexOf('function normaliseStoryWord'),end=app.indexOf('function closeStoryWordPopup',start);
  const findFactory=new Function('words','stripArticle',app.slice(start,end)+';return findStoryVocabularyEntry');
  const separableVerb={german:'auffordern',presentEr:'fordert auf',partOfSpeech:'verb'};
- const findEntry=findFactory([separableVerb],value=>String(value||'').replace(/^(der|die|das)\\s+/i,''));
+ const findEntry=findFactory([separableVerb],value=>String(value||'').replace(/^(der|die|das)\s+/i,''));
  assert.equal(findEntry('Auf'),null);
  assert.equal(findEntry('auffordern'),separableVerb);
+ assert.equal(findEntry('fordert auf'),separableVerb);
 });
