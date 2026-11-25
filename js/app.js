@@ -82,7 +82,7 @@ function storyLookupForms(raw){const key=normaliseStoryWord(raw),forms=new Set(k
   const plain=form.replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u');add(plain);for(const suffix of ['ern','er','en','e','n'])if(plain.endsWith(suffix)&&plain.length>suffix.length+2)add(plain.slice(0,-suffix.length));
  }
  return forms;}
-function storyFieldForms(value){return String(value||'').split(/[;,|/]+|\\s+·\\s+/).flatMap(part=>{const clean=normaliseStoryWord(part);return clean?[clean]:[];});}
+function storyFieldForms(value){return String(value||'').split(/[\\s;,|/]+/).flatMap(part=>{const clean=normaliseStoryWord(part);return clean?[clean]:[];});}
 function findStoryVocabularyEntry(raw){const key=normaliseStoryWord(raw);if(!key)return null;const fields=['german','plural','presentIch','presentDu','presentEr','presentWir','presentIhr','presentSie','prateritum','perfekt'];
  const exact=words.find(w=>fields.some(k=>storyFieldForms(w[k]).includes(key))||normaliseStoryWord(stripArticle(w.german||''))===key);if(exact)return exact;
  const candidates=storyLookupForms(key);return words.find(w=>{const stored=[w.german,stripArticle(w.german||''),w.plural,...fields.slice(2).map(k=>w[k])].flatMap(storyFieldForms);return stored.some(value=>candidates.has(value));})||null;}
