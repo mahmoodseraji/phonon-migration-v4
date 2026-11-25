@@ -231,7 +231,7 @@ export async function speakNeural(voiceId, text, rate = 0.88, onStage = () => {}
   const voice = assertVoice(voiceId);
   const sourceText = String(text || '').trim();
   if (!sourceText) throw new Error('There is no text to pronounce.');
-  if (sourceText.length > 2000) throw new Error('Please keep a pronunciation request below 2,000 characters.');
+  if (sourceText.length > 12000) throw new Error('This chapter is too long for one continuous Phonon narration. Please use System voice or listen paragraph by paragraph.');
 
   const token = ++speechSequence;
   stopCurrentAudio();
