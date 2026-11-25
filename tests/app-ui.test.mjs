@@ -189,7 +189,7 @@ test('Separable verb particles are not matched as standalone vocabulary words',(
  const formsSource=app.match(/function storyFieldForms\(value\)\{[\s\S]*?\n\}/)?.[0];
  assert.ok(normalizeSource);assert.ok(formsSource);
  const normaliseStoryWord=new Function(normalizeSource+';return normaliseStoryWord')();
- const storyFieldForms=new Function('normaliseStoryWord',formsSource+';return storyFieldForms')(normaliseStoryWord);
+ const storyFieldForms=new Function('normaliseStoryWord','STORY_SEPARABLE_PARTICLES',formsSource+';return storyFieldForms')(normaliseStoryWord,new Set(['ab','an','auf','aus','bei','da','ein','fort','her','hin','los','mit','nach','vor','weg','zu','zurück']));
  assert.ok(storyFieldForms('fordert auf').includes('fordert auf'));
  assert.ok(storyFieldForms('fordert auf').includes('fordert'));
  assert.ok(!storyFieldForms('fordert auf').includes('auf'));
