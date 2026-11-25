@@ -98,7 +98,8 @@ const STORY_IRREGULAR_LOOKUP=(()=>{const map=new Map();for(const [lemma,forms] o
 function storyFieldForms(value){return String(value||'').split(/[\s;,|/]+/).map(normaliseStoryWord).filter(Boolean);}
 function storyGeneratedForms(word){const forms=new Set([word.german,stripArticle(word.german||''),word.plural,word.presentIch,word.presentDu,word.presentEr,word.presentWir,word.presentIhr,word.presentSie,word.prateritum,word.perfekt].flatMap(storyFieldForms));const lemma=normaliseStoryWord(stripArticle(word.german||''));if(!lemma)return forms;
  const irregular=STORY_IRREGULAR_FORMS[lemma];if(irregular)for(const f of irregular.split(/\s+/))forms.add(f);
- if(lemma.endsWith('en')&&lemma.length>4){const stem=lemma.slice(0,-2),soft=/[td]$/.test(stem);for(const f of [stem,stem+'e',stem+(soft?'est':'st'),stem+(soft?'et':'t'),stem+'te',stem+'ten','ge'+stem+(soft?'et':'t')])forms.add(f);}
+ if(lemma.endsWith('en')&&lemma.length>4){const stem=lemma.slice(0,-2),soft=/[td]$/.test(stem),participle=lemma.endsWith('ieren')?stem+'t':'ge'+stem+(soft?'et':'t');for(const f of [stem,stem+'e',stem+(soft?'est':'st'),stem+(soft?'et':'t'),stem+'te',stem+'ten',participle])forms.add(f);}
+ // Comparative umlaut forms such as größer -> groß are resolved through reversed endings and umlaut candidates.
  if(['adjective','adjektiv','adj'].includes(String(word.partOfSpeech||'').toLowerCase())){for(const suffix of ['sten','ste','ster','stes','stem','er','es','em','e','en'])if(lemma.endsWith(suffix)&&lemma.length>suffix.length+2)forms.add(lemma.slice(0,-suffix.length));}
  return forms;}
 function storyLookupForms(raw){const key=normaliseStoryWord(raw),forms=new Set(key?[key]:[]),add=value=>{const v=normaliseStoryWord(value);if(v)forms.add(v);};
