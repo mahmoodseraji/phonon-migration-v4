@@ -361,3 +361,13 @@ body.reviewing-session #studyCard.is-flipped .study-card-front .sound-button {
 }
 
 .story-word-info[hidden] { display:none !important; }
+
+/* Flashcard editor modal and stable iOS search focus. */
+#wordEditorDialog{width:min(620px,calc(100vw - 28px));max-height:min(88svh,820px);overflow:auto;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);}
+#wordEditorDialog::backdrop{background:rgba(0,0,0,.62);backdrop-filter:blur(3px);}
+#wordEditorDialog .word-editor{margin:0;padding:0;border:0;}
+.study-card-back{position:relative;}
+.study-card-back-tools{position:absolute;top:12px;right:12px;z-index:2;}
+.study-card-back-tools .icon-button{width:34px;height:34px;font-size:15px;}
+#wordSearch.search-field{font-size:16px;line-height:1.25;min-height:44px;transform:none;transition:none;-webkit-appearance:none;appearance:none;}
+#wordSearch.search-field:focus{font-size:16px;transform:none;}
