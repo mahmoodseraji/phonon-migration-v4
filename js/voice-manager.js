@@ -407,7 +407,7 @@ export async function speakNeuralSegments(voiceId, segments, rate = 0.88, onStag
         const samples = trimNarrationSilence(stretched);
         const buffer = context.createBuffer(1, samples.length, decoded.sampleRate);
         buffer.copyToChannel(samples, 0);
-        sequence.queue.push({ buffer, index: index + 1 });
+        sequence.queue.push({ buffer, text: sourceSegments[index], index: index + 1 });
         wakeSequence(sequence);
       }
     } catch (error) {
@@ -427,7 +427,7 @@ export async function speakNeuralSegments(voiceId, segments, rate = 0.88, onStag
       if (context.state === 'suspended') await context.resume();
       if (context.state !== 'running') throw new Error('iOS audio context is ' + context.state + '; playback could not start.');
       if (sequence.cancelled) break;
-      onStage('Playing Phonon audio · ' + item.index + '/' + sequence.totalChunks);
+      onStage({ type: 'chunk-start', text: item.text, duration: item.buffer.duration, index: item.index, total: sequence.totalChunks });
       await playSequenceBuffer(sequence, item.buffer);
       sequence.completedChunks = item.index;
     }
