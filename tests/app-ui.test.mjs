@@ -194,4 +194,10 @@ test('Separable verb particles are not matched as standalone vocabulary words',(
  assert.ok(storyFieldForms('fordert auf').includes('fordert'));
  assert.ok(!storyFieldForms('fordert auf').includes('auf'));
  assert.ok(storyFieldForms('ist gegangen').includes('gegangen'));
+ const start=app.indexOf('function normaliseStoryWord'),end=app.indexOf('function closeStoryWordPopup',start);
+ const findFactory=new Function('words','stripArticle',app.slice(start,end)+';return findStoryVocabularyEntry');
+ const separableVerb={german:'auffordern',presentEr:'fordert auf',partOfSpeech:'verb'};
+ const findEntry=findFactory([separableVerb],value=>String(value||'').replace(/^(der|die|das)\\s+/i,''));
+ assert.equal(findEntry('Auf'),null);
+ assert.equal(findEntry('auffordern'),separableVerb);
 });
