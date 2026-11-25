@@ -1,4 +1,4 @@
-const CACHE = 'deutsch-meister-v3.10.3';
+const CACHE = 'deutsch-meister-v3.11.0';
 const RUNTIME_CACHE = 'phonon-tts-v1';
 const PREFIX = 'deutsch-meister-';
 const CORE = [
