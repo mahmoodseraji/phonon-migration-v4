@@ -6,7 +6,7 @@ export function studyPronunciationText(word = {}) {
   const raw = String(word.german || '').trim();
   if (!raw) return '';
   const explicit = String(word.partOfSpeech || '').trim().toLocaleLowerCase('de-DE');
-  const isExplicitNoun = /^(?:noun|nouns|nomen|substantiv|substantive|n)(?:\\b|$)/u.test(explicit);
+  const isExplicitNoun = /^(?:noun|nouns|nomen|substantiv|substantive|n)(?:\b|$)/u.test(explicit);
   const isNoun = explicit ? isExplicitNoun : inferPartOfSpeech(word) === 'noun';
   if (!isNoun) return raw;
   const article = getArticle(word);
