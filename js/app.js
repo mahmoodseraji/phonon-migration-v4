@@ -148,7 +148,7 @@ async function playStorySentences(start,mode=false){
  put('storyProgress',{...prior,lastParagraph:first.paragraphIndex,lastOpenedAt:new Date().toISOString()}).then(()=>all('storyProgress')).then(rows=>storyProgress=rows).catch(error=>console.warn('Could not save story reading progress',error));
  try{
   if(voice==='system')await speakSystemStoryParagraph(plan.text,plan.startOffset,token);
-  else await speakNeuralSegments(voice,plan.segments,rate,stage=>{if(stage==='Playing Phonon audio')highlightEstimatedProgress(plan.text,plan.startOffset,token,rate);});
+  else await speakNeuralSegments(voice,plan.segments,rate,stage=>{$('storyPlaybackStatus').textContent=stage;if(stage==='Playing Phonon audio')highlightEstimatedProgress(plan.text,plan.startOffset,token,rate);});
  }catch(error){if(token===storyPlaybackToken){console.error('Story narration failed:',error);toast(error.message||'Could not play this story.');updateStoryPlayer('stopped','Playback could not start');}}
  finally{if(token===storyPlaybackToken){if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}if(storyPlaybackState!=='paused')updateStoryPlayer('finished','Playback finished');document.querySelectorAll('.story-sentence.is-speaking').forEach(x=>x.classList.remove('is-speaking'));}}
 }
