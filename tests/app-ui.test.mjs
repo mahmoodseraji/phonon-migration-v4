@@ -155,3 +155,24 @@ test('Story word popups render before optional encounter tracking and support En
 test('Story playback has no artificial paragraph delay',()=>{
  assert.doesNotMatch(app,/waitStory\(560,token\)/);
 });
+
+
+test('Stories narrates a chapter as one continuous utterance with global sentence offsets',()=>{
+ assert.match(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join/);
+ assert.match(app,/globalStart:globalOffset/);
+ assert.match(app,/speakSystemStoryParagraph\(text,textStart,token\)/);
+ assert.doesNotMatch(app,/for\(let pi=first\.paragraphIndex/);
+ assert.doesNotMatch(app,/waitStory\(/);
+});
+test('Stories vocabulary matching checks saved forms and common irregular and regular German verb forms',()=>{
+ assert.match(app,/STORY_IRREGULAR_FORMS/);
+ assert.match(app,/gegangen/);
+ assert.match(app,/function storyGeneratedForms/);
+ assert.match(app,/presentEr/);
+});
+test('Story word popup closes on outside tap and Escape without closing when tapped inside',()=>{
+ assert.match(app,/document\.addEventListener\('pointerdown'/);
+ assert.match(app,/!wordPopup\.contains\(event\.target\)/);
+ assert.match(app,/event\.key==='Escape'/);
+ assert.match(app,/wordPopup\.addEventListener\('pointerdown'.*stopPropagation/);
+});
