@@ -236,12 +236,23 @@ function stopActiveSequence() {
   if (!sequence) return;
   activeSequence = null;
   sequence.cancelled = true;
+  const playback = sequence.currentPlayback;
+  if (playback) {
+    if (playback.source) {
+      playback.source.onended = null;
+      try { playback.source.stop(); } catch { /* already stopped */ }
+      playback.source = null;
+    }
+    sequence.currentPlayback = null;
+    playback.resolve?.();
+  }
   if (sequence.source) {
     sequence.source.onended = null;
     try { sequence.source.stop(); } catch { /* already stopped */ }
     sequence.source = null;
   }
   sequence.resolve?.();
+  if (typeof wakeSequence === 'function') wakeSequence(sequence);
 }
 
 function startSequenceAt(sequence) {
