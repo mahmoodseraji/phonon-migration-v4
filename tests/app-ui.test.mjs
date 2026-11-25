@@ -138,3 +138,20 @@ test('Story vocabulary popups remove universal underlines and support dictionary
  assert.ok(app.includes('This dictionary form is already in your vocabulary'));
  assert.ok(app.includes('showStoryWord(w.dataset.storyWord,w)'));
 });
+
+
+test('Stories vocabulary lookup normalizes punctuation and matches inflected forms against stored lemmas',()=>{
+ assert.match(app,/normalize\('NFC'\)/);
+ assert.match(app,/function storyLookupForms/);
+ assert.match(app,/Reverse common umlaut changes/);
+ assert.match(app,/storyFieldForms\(w\[k\]\)/);
+ assert.match(app,/presentEr/);
+});
+test('Story word popups render before optional encounter tracking and support English translation fields',()=>{
+ assert.match(app,/info\.hidden=false;info\.style\.display='block'/);
+ assert.match(app,/entry\?\.translation_en/);
+ assert.match(app,/Could not save story word encounter/);
+});
+test('Story playback has no artificial paragraph delay',()=>{
+ assert.doesNotMatch(app,/waitStory\(560,token\)/);
+});
