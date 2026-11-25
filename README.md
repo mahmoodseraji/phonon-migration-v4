@@ -1,4 +1,11 @@
-# Deutsch Meister 3.13.0
+# Deutsch Meister 3.14.0
+
+## What's new in 3.14.0
+
+- Flashcards pronounce nouns together with their grammatical article (for example, “das Buch”); other parts of speech are pronounced without an article. The same rule applies to automatic playback and the speaker button.
+- Every vocabulary editor input, select and textarea uses a stable 16px text size and no focus scaling, preventing iPhone Safari zoom while keeping dimensions consistent.
+- The flashcard edit shortcut now has its own reserved toolbar row, separate from meanings, examples and grammar details.
+- Verb present-tense forms are arranged in a compact two-column Person / Präsens table. Existing field IDs and save behaviour are preserved, so imported vocabulary and learning history are unaffected.
 
 ## What's new in 3.13.0
 
