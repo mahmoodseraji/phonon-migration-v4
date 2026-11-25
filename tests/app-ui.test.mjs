@@ -143,8 +143,9 @@ test('Story vocabulary popups remove universal underlines and support dictionary
 test('Stories vocabulary lookup normalizes punctuation and matches inflected forms against stored lemmas',()=>{
  assert.match(app,/normalize\('NFC'\)/);
  assert.match(app,/function storyLookupForms/);
- assert.match(app,/Reverse common umlaut changes/);
- assert.match(app,/storyFieldForms\(w\[k\]\)/);
+ assert.match(app,/STORY_IRREGULAR_FORMS/);
+ assert.match(app,/storyGeneratedForms/);
+ assert.match(app,/storyFieldForms/);
  assert.match(app,/presentEr/);
 });
 test('Story word popups render before optional encounter tracking and support English translation fields',()=>{
