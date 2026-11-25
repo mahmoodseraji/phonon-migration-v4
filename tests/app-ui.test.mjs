@@ -118,3 +118,23 @@ test('Stories provides a personal library, DOCX/TXT import, interactive reader a
  assert.match(stories,/export function parseStoryText/);assert.match(stories,/export async function extractDocxText/);
  assert.match(app,/storyProgress/);assert.match(app,/storyEncountered/);
 });
+
+test('Stories has explicit continuous narration controls and playback state',()=>{
+ for(const id of ['storyPlayPause','storyRepeatSentence','storyStop','storyPlaybackStatus'])assert.ok(html.includes('id="'+id+'"'));
+ assert.ok(!html.includes('id="storyPlayAll"'));
+ assert.ok(app.includes('new SpeechSynthesisUtterance(text)'));
+ assert.ok(app.includes('u.onboundary'));
+ assert.ok(app.includes('speechSynthesis.pause()'));
+ assert.ok(app.includes('speechSynthesis.resume()'));
+ assert.ok(app.includes('waitStory(560,token)'));
+ assert.ok(app.includes("speakNeural(voice,text,rate,stage"));
+});
+test('Story vocabulary popups remove universal underlines and support dictionary-form confirmation',async()=>{
+ const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
+ assert.ok(css.includes('.story-word { border:0 !important; text-decoration:none !important'));
+ assert.ok(app.includes('function findStoryVocabularyEntry'));
+ assert.ok(app.includes('dictionaryHref(key)'));
+ assert.ok(app.includes('id="storyWordLemma"'));
+ assert.ok(app.includes('This dictionary form is already in your vocabulary'));
+ assert.ok(app.includes('showStoryWord(w.dataset.storyWord,w)'));
+});
