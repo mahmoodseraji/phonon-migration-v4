@@ -197,7 +197,7 @@ test('Separable verb particles are not matched as standalone vocabulary words',(
 
 test('flashcards automatically speak the front and ordered back sequence, and stop playback on rating',()=>{
  assert.match(app,/function playStudySequence\(sequence\)/);
- assert.match(app,/playStudySequence\(\[\[w\.german,'de'\]\]\)/);
+ assert.match(app,/playStudySequence\(\[\[studyPronunciationText\(w\),'de'\]\]\)/);
  assert.match(app,/playStudySequence\(\[\[currentWord\?\.example,'de'\],\[currentWord\?\.translation,'en'\]\]\)/);
  assert.match(app,/async function rateWord\(rating\)[\s\S]*?stopStudySpeech\(\)/);
  assert.match(app,/function stopStudySpeech\(\)[\s\S]*?speechSynthesis\.cancel\(\)[\s\S]*?stopNeuralSpeech\(\)/);
