@@ -4,7 +4,7 @@ const PREFIX = 'deutsch-meister-';
 const CORE = [
   './', './index.html', './manifest.json',
   './css/tokens.css', './css/app.css',
-  './js/app.js', './js/csv.js', './js/db.js', './js/stories.js',
+  './js/app.js', './js/csv.js', './js/db.js', './js/stories.js', './js/story-audio.js',
   './js/scheduler.js', './js/study-session.js', './js/flashcard.js', './js/challenges.js', './js/voice-manager.js',
   './assets/icon-192.png', './assets/icon-512.png',
 ];
