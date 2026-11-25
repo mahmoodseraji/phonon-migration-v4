@@ -156,6 +156,48 @@ export async function downloadNeuralVoice(voiceId, onProgress = () => {}) {
   return after;
 }
 
+/** Pitch-preserving WSOLA time stretch for the mono Phonon waveform. */
+export function timeStretchPcm(input, rate = 1, sampleRate = 24000) {
+  const source = input instanceof Float32Array ? input : new Float32Array(input);
+  const factor = Math.max(0.65, Math.min(1.25, Number(rate) || 1));
+  if (Math.abs(factor - 1) < 0.015 || source.length < sampleRate * 0.08) return source.slice();
+  const windowSize = Math.max(256, Math.round(sampleRate * 0.04));
+  const overlap = Math.floor(windowSize / 2);
+  const synthesisHop = windowSize - overlap;
+  const searchRadius = Math.max(24, Math.round(sampleRate * 0.004));
+  const targetLength = Math.max(1, Math.round(source.length / factor));
+  const output = new Float32Array(targetLength + windowSize);
+  output.set(source.subarray(0, Math.min(windowSize, source.length)), 0);
+  let outputPosition = 0;
+  let inputPosition = 0;
+  while (outputPosition + synthesisHop + overlap < targetLength && inputPosition + windowSize < source.length) {
+    outputPosition += synthesisHop;
+    const expected = Math.round(inputPosition + synthesisHop * factor);
+    const min = Math.max(0, expected - searchRadius);
+    const max = Math.min(source.length - windowSize, expected + searchRadius);
+    let best = Math.max(min, Math.min(max, expected));
+    let bestScore = -Infinity;
+    for (let candidate = min; candidate <= max; candidate += 2) {
+      let score = 0;
+      for (let j = 0; j < overlap; j += 3) score += output[outputPosition + j] * source[candidate + j];
+      if (score > bestScore) { bestScore = score; best = candidate; }
+    }
+    for (let j = 0; j < overlap; j++) {
+      const mix = j / Math.max(1, overlap - 1);
+      output[outputPosition + j] = output[outputPosition + j] * (1 - mix) + source[best + j] * mix;
+    }
+    output.set(source.subarray(best + overlap, best + windowSize), outputPosition + overlap);
+    inputPosition = best;
+  }
+  const filledUntil = Math.min(targetLength, outputPosition + windowSize);
+  if (filledUntil < targetLength) {
+    const remaining = targetLength - filledUntil;
+    const sourceStart = Math.max(0, source.length - remaining);
+    output.set(source.subarray(sourceStart, sourceStart + remaining), filledUntil);
+  }
+  return output.slice(0, targetLength);
+}
+
 function getAudioContext() {
   if (!audioContext || audioContext.state === 'closed') {
     const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
@@ -214,11 +256,14 @@ export async function speakNeural(voiceId, text, rate = 0.88, onStage = () => {}
     await resumePromise;
     if (context.state !== 'running') throw new Error(`iOS audio context is ${context.state}; playback could not start.`);
     if (token !== speechSequence) return;
-    const audioBuffer = await context.decodeAudioData(await wav.arrayBuffer());
+    const decoded = await context.decodeAudioData(await wav.arrayBuffer());
     if (token !== speechSequence) return;
+    const stretched = timeStretchPcm(decoded.getChannelData(0), rate, decoded.sampleRate);
+    const audioBuffer = context.createBuffer(1, stretched.length, decoded.sampleRate);
+    audioBuffer.copyToChannel(stretched, 0);
     const source = context.createBufferSource();
     source.buffer = audioBuffer;
-    source.playbackRate.value = Math.max(0.65, Math.min(1.25, Number(rate) || 0.88));
+    source.playbackRate.value = 1;
     source.connect(context.destination);
     activeSource = source;
     onStage('Playing Phonon audio');
