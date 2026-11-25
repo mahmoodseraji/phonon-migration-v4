@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/app.css">
-  <title>Deutsch Meister 3.10.3</title>
+  <title>Deutsch Meister 3.13.0</title>
 </head>
 <body>
 <div class="app-shell">
@@ -45,6 +45,7 @@
               <div class="study-face-top"><span id="studyPartOfSpeech" class="study-pos"></span><span id="studyArticle" class="study-article" hidden></span></div><div class="study-face-content"><div class="study-word-row"><div class="study-word-centre"><h2 id="studyGerman">—</h2><p id="studyPlural" class="study-plural" hidden></p></div><button class="sound-button" id="studySpeak" aria-label="Listen to German word">🔊</button></div></div><span class="flip-hint">Tap anywhere on the card to reveal the answer</span>
             </section>
             <section class="study-card-face study-card-back" aria-label="Answer">
+              <div class="study-card-back-tools"><button type="button" class="icon-button" id="studyEditWord" aria-label="Edit this vocabulary entry" title="Edit vocabulary">✎</button></div>
               <div id="studyAnswer">
                 <div class="answer-line"><div><span class="muted">English meaning</span><p id="studyTranslation"></p></div><button class="sound-button" id="studyTranslationSpeak" aria-label="Listen to English meaning">🔊</button></div>
                 <div class="answer-line" id="studyGermanExampleBlock" hidden><div><span class="muted">German example</span><p id="studyExample"></p></div><button class="sound-button" id="studyExampleSpeakDe" aria-label="Listen to German example">🔊</button></div>
@@ -109,18 +110,6 @@
       <div id="personalWordList" class="library-list"></div>
       <button id="loadMoreWords" class="button button-outline full load-more" hidden>Show more</button>
       <input id="importCsv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values" hidden>
-      <form id="wordEditor" class="word-editor" hidden>
-        <div class="row-between"><h2 id="editorTitle">Add vocabulary</h2><button type="button" class="icon-button" id="closeEditor" aria-label="Close editor">×</button></div>
-        <label><span>German word or phrase *</span><input id="fieldGerman" class="field" required placeholder="das Buch"></label>
-        <div class="form-grid"><label><span>English translation</span><input id="fieldTranslation" class="field"></label><label><span>Article</span><input id="fieldArticle" class="field" placeholder="der / die / das"></label><label><span>Plural</span><input id="fieldPlural" class="field"></label><label><span>Part of speech</span><input id="fieldPartOfSpeech" class="field" placeholder="noun / verb / adjective"></label></div>
-        <label><span>Example sentence in German</span><textarea id="fieldExample" class="field" rows="2"></textarea></label>
-        <label><span>English example translation</span><textarea id="fieldNotes" class="field" rows="2"></textarea></label>
-        <details class="verb-fields"><summary>Verb forms (optional)</summary><div class="form-grid"><label><span>Present · ich</span><input id="fieldPresentIch" class="field"></label><label><span>Present · du</span><input id="fieldPresentDu" class="field"></label><label><span>Present · er/sie/es</span><input id="fieldPresentEr" class="field"></label><label><span>Present · wir</span><input id="fieldPresentWir" class="field"></label><label><span>Present · ihr</span><input id="fieldPresentIhr" class="field"></label><label><span>Present · sie/Sie</span><input id="fieldPresentSie" class="field"></label><label><span>Präteritum</span><input id="fieldPrateritum" class="field"></label><label><span>Perfekt</span><input id="fieldPerfekt" class="field"></label><label><span>Perfekt auxiliary</span><select id="fieldAuxiliary" class="field"><option value="">—</option><option>haben</option><option>sein</option></select></label></div></details>
-        
-        
-        <button class="button button-primary full" type="submit">Save word</button>
-        <input id="editId" type="hidden">
-      </form>
     </section>
 
     <section class="view" id="progressView" data-view="progress">
@@ -167,10 +156,25 @@
         <button class="text-button" id="resetProgress">Reset learning progress (keep words)</button>
         <div class="danger-zone"><p>Delete all manually added and imported vocabulary.</p><button class="button button-danger" id="deletePersonalWords">Delete all vocabulary</button></div>
       </section>
-      <p class="app-version">DEUTSCH MEISTER · VERSION 3.12.1</p>
+      <p class="app-version">DEUTSCH MEISTER · VERSION 3.13.0</p>
     </section>
   </main>
 
+  <dialog id="wordEditorDialog" class="app-modal" aria-labelledby="editorTitle">
+    <form id="wordEditor" class="word-editor" hidden>
+      <div class="row-between"><h2 id="editorTitle">Add vocabulary</h2><button type="button" class="icon-button" id="closeEditor" aria-label="Close editor">×</button></div>
+      <label><span>German word or phrase *</span><input id="fieldGerman" class="field" required placeholder="das Buch"></label>
+      <div class="form-grid"><label><span>English translation</span><input id="fieldTranslation" class="field"></label><label><span>Article</span><input id="fieldArticle" class="field" placeholder="der / die / das"></label><label><span>Plural</span><input id="fieldPlural" class="field"></label><label><span>Part of speech</span><input id="fieldPartOfSpeech" class="field" placeholder="noun / verb / adjective"></label></div>
+      <label><span>Example sentence in German</span><textarea id="fieldExample" class="field" rows="2"></textarea></label>
+      <label><span>English example translation</span><textarea id="fieldNotes" class="field" rows="2"></textarea></label>
+      <details class="verb-fields"><summary>Verb forms (optional)</summary><div class="form-grid"><label><span>Present · ich</span><input id="fieldPresentIch" class="field"></label><label><span>Present · du</span><input id="fieldPresentDu" class="field"></label><label><span>Present · er/sie/es</span><input id="fieldPresentEr" class="field"></label><label><span>Present · wir</span><input id="fieldPresentWir" class="field"></label><label><span>Present · ihr</span><input id="fieldPresentIhr" class="field"></label><label><span>Present · sie/Sie</span><input id="fieldPresentSie" class="field"></label><label><span>Präteritum</span><input id="fieldPrateritum" class="field"></label><label><span>Perfekt</span><input id="fieldPerfekt" class="field"></label><label><span>Perfekt auxiliary</span><select id="fieldAuxiliary" class="field"><option value="">—</option><option>haben</option><option>sein</option></select></label></div></details>
+      
+      
+      <button class="button button-primary full" type="submit">Save word</button>
+      <input id="editId" type="hidden">
+    </form>
+
+  </dialog>
   <dialog id="wordDetailModal" class="app-modal" aria-labelledby="wordDetailHeading">
     <div class="modal-header"><h2 id="wordDetailHeading">Vocabulary</h2><button type="button" class="icon-button" id="wordDetailClose" aria-label="Close word details">×</button></div>
     <div id="wordDetailContent" class="word-detail-content"></div>
