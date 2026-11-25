@@ -193,3 +193,27 @@ test('Separable verb particles are not matched as standalone vocabulary words',(
  assert.equal(findEntry('auffordern'),separableVerb);
  assert.equal(findEntry('fordert auf'),separableVerb);
 });
+
+
+test('flashcards automatically speak the front and ordered back sequence, and stop playback on rating',()=>{
+ assert.match(app,/function playStudySequence\(sequence\)/);
+ assert.match(app,/playStudySequence\(\[\[w\.german,'de'\]\]\)/);
+ assert.match(app,/playStudySequence\(\[\[currentWord\?\.example,'de'\],\[currentWord\?\.translation,'en'\]\]\)/);
+ assert.match(app,/async function rateWord\(rating\)[\s\S]*?stopStudySpeech\(\)/);
+ assert.match(app,/function stopStudySpeech\(\)[\s\S]*?speechSynthesis\.cancel\(\)[\s\S]*?stopNeuralSpeech\(\)/);
+ assert.doesNotMatch(app,/playStudySequence\(\[\[currentWord\?\.exampleEn/);
+});
+
+test('flashcard editing preserves the active card, schedule and audio state',()=>{
+ assert.match(html,/id="studyEditWord"/);assert.match(html,/id="wordEditorDialog"/);
+ assert.match(app,/const editingCurrent=!!currentWord&&currentWord\.id===id/);
+ assert.match(app,/studyQueue=studyQueue\.map\(item=>item\.id===id\?w:item\)/);
+ assert.match(app,/showStudyWord\(\{autoplay:false,preserveFace:true\}\)/);
+ assert.match(app,/await put\('words',w\)/);
+});
+
+test('library search remains at 16px on mobile focus to prevent iOS zoom',async()=>{
+ const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
+ assert.match(css,/#wordSearch\.search-field[^}]*font-size:16px/);
+ assert.match(css,/#wordSearch\.search-field:focus[^}]*font-size:16px/);
+});
