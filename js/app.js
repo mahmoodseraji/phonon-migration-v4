@@ -5,7 +5,8 @@ import {hasLearningHistory,buildDailyStudyQueue,distributionFor,sm2LearningStage
 import {conjugationRows,dictionaryHref} from './flashcard.js';
 import {parseCSV} from './csv.js';
 import {stripArticle,formatPlural,pluralOptions,getArticle,inferPartOfSpeech,buildVerbBank,buildVerbQuestions,uniqueOptions,shuffle} from './challenges.js';
-import {getVoiceStorageStatus,downloadNeuralVoice,speakNeural,terminateNeuralWorker,deleteAllNeuralVoices} from './voice-manager.js';
+import {getVoiceStorageStatus,downloadNeuralVoice,speakNeural,speakNeuralSegments,pauseNeuralSpeech,resumeNeuralSpeech,stopNeuralSpeech,terminateNeuralWorker,deleteAllNeuralVoices} from './voice-manager.js';
+import {createStoryNarrationPlan} from './story-audio.js';
 import {parseStoryText,extractDocxText,splitStorySentences} from './stories.js';
 const $=id=>document.getElementById(id),uid=()=>crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const SETTING_DEFAULTS={theme:'dark',dailyGoal:10,newWordsPerDay:10,algorithm:'sm2',speechRate:.88,germanVoiceMode:'system',englishVoiceMode:'system',v3StartedOn:null};
@@ -122,21 +123,60 @@ function setStoryHighlight(i){document.querySelectorAll('.story-sentence.is-spea
 function updateStoryPlayer(state,message){storyPlaybackState=state;$('storyPlaybackStatus').textContent=message||({playing:'Playing',paused:'Paused',stopped:'Ready to listen',finished:'Finished'}[state]||'Ready to listen');$('storyPlayPause').textContent=state==='playing'?'Ⅱ Pause':state==='paused'?'▶ Resume':'▶ Play';$('storyRepeatSentence').disabled=!currentStorySentences.length||state==='stopped'&&currentStorySentenceIndex===0;}
 function highlightEstimatedProgress(text,startOffset,token,rate){if(storyEstimateTimer)clearInterval(storyEstimateTimer);const list=currentStorySentences.map((s,i)=>({...s,index:i})).filter(s=>s.globalStart>=startOffset);if(!list.length)return;const totalChars=list.reduce((n,s)=>n+s.text.length,0),duration=Math.max(900,(text.trim().split(/\s+/).length/2.45)*60000/Math.max(.65,rate)),started=Date.now();storyEstimateTimer=setInterval(()=>{if(token!==storyPlaybackToken){clearInterval(storyEstimateTimer);storyEstimateTimer=null;return;}const progress=Math.min(1,(Date.now()-started)/duration)*totalChars;let count=0;for(const s of list){count+=s.text.length;if(progress<=count){currentStorySentenceIndex=s.index;setStoryHighlight(s.index);break;}}},100);}
 function speakSystemStoryParagraph(text,startOffset,token){return new Promise((resolve,reject)=>{const u=new SpeechSynthesisUtterance(text),rate=Number($('storySpeechRate').value||.88);u.lang='de-DE';u.rate=rate;if(storySystemVoice)u.voice=storySystemVoice;u.onstart=()=>updateStoryPlayer('playing','Playing');u.onboundary=e=>{if(token!==storyPlaybackToken||typeof e.charIndex!=='number')return;const absolute=e.charIndex+startOffset,match=currentStorySentences.map((s,i)=>({...s,index:i})).filter(s=>s.globalStart<=absolute).pop();if(match){currentStorySentenceIndex=match.index;setStoryHighlight(match.index);}};u.onend=resolve;u.onerror=e=>['canceled','interrupted'].includes(e.error)?resolve():reject(Error('Browser speech playback failed.'));speechSynthesis.speak(u);});}
-async function playStorySentences(start,mode=false){if(!currentStoryChapter)return;const onlySentence=mode===true,onlyParagraph=mode==='paragraph';const token=++storyPlaybackToken;if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}if('speechSynthesis'in window)speechSynthesis.cancel();const voice=settings.germanVoiceMode||'system',rate=Number($('storySpeechRate').value||.88);if(voice==='system'){terminateNeuralWorker();const voices=speechSynthesis.getVoices();storySystemVoice=storySystemVoice||voices.find(v=>/^de[-_]DE$/i.test(v.lang))||voices.find(v=>/^de/i.test(v.lang))||null;}else{if(!voiceModelReady[voice]){toast('Selected Phonon voice is not downloaded. Choose System or download the voice in Settings.');return;}storySystemVoice=null;}
- currentStorySentenceIndex=Math.max(0,Math.min(start,currentStorySentences.length-1));const first=currentStorySentences[currentStorySentenceIndex];if(!first)return;let text='',textStart=first.globalStart;
- if(onlySentence)text=first.text;
- else if(onlyParagraph){text=currentStoryChapter.paragraphs[first.paragraphIndex]||'';textStart=storyParagraphOffsets[first.paragraphIndex]||0;}
- else text=currentStoryNarrationText.slice(first.globalStart);
- if(!text.trim())return;storyActiveParagraphIndex=first.paragraphIndex;updateStoryPlayer('playing','Preparing narration');setStoryHighlight(currentStorySentenceIndex);
+async function playStorySentences(start,mode=false){
+ if(!currentStoryChapter)return;
+ const onlySentence=mode===true,onlyParagraph=mode==='paragraph',token=++storyPlaybackToken;
+ if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}
+ if('speechSynthesis'in window)speechSynthesis.cancel();
+ stopNeuralSpeech();
+ const voice=settings.germanVoiceMode||'system',rate=Number($('storySpeechRate').value||.88);
+ if(voice==='system'){
+  const voices=speechSynthesis.getVoices();
+  storySystemVoice=storySystemVoice||voices.find(v=>/^de[-_]DE$/i.test(v.lang))||voices.find(v=>/^de/i.test(v.lang))||null;
+ }else{
+  if(!voiceModelReady[voice]){toast('Selected Phonon voice is not downloaded. Choose System or download the voice in Settings.');updateStoryPlayer('stopped','Selected Phonon voice is not installed');return;}
+  storySystemVoice=null;
+ }
+ currentStorySentenceIndex=Math.max(0,Math.min(start,currentStorySentences.length-1));
+ const first=currentStorySentences[currentStorySentenceIndex];if(!first)return;
+ const plan=createStoryNarrationPlan({paragraphs:currentStoryChapter.paragraphs,sentences:currentStorySentences,startIndex:currentStorySentenceIndex,mode:onlySentence?'sentence':onlyParagraph?'paragraph':'chapter'});
+ if(!plan||!plan.text.trim())return;
+ storyActiveParagraphIndex=first.paragraphIndex;
+ updateStoryPlayer('playing','Preparing narration');
+ setStoryHighlight(currentStorySentenceIndex);
  const prior=storyProgress.find(x=>x.chapterId===currentStoryChapter.id)||{id:currentStoryChapter.id,storyId:currentStory.id,chapterId:currentStoryChapter.id,completed:false};
  put('storyProgress',{...prior,lastParagraph:first.paragraphIndex,lastOpenedAt:new Date().toISOString()}).then(()=>all('storyProgress')).then(rows=>storyProgress=rows).catch(error=>console.warn('Could not save story reading progress',error));
- try{if(voice==='system')await speakSystemStoryParagraph(text,textStart,token);else await speakNeural(voice,text,rate,stage=>{if(stage==='Playing Phonon audio')highlightEstimatedProgress(text,textStart,token,rate);});}
- catch(error){if(token===storyPlaybackToken)toast(error.message||'Could not play this story.');}
- finally{if(token===storyPlaybackToken){if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}updateStoryPlayer('finished','Playback finished');document.querySelectorAll('.story-sentence.is-speaking').forEach(x=>x.classList.remove('is-speaking'));}}
+ try{
+  if(voice==='system')await speakSystemStoryParagraph(plan.text,plan.startOffset,token);
+  else await speakNeuralSegments(voice,plan.segments,rate,stage=>{if(stage==='Playing Phonon audio')highlightEstimatedProgress(plan.text,plan.startOffset,token,rate);});
+ }catch(error){if(token===storyPlaybackToken){console.error('Story narration failed:',error);toast(error.message||'Could not play this story.');updateStoryPlayer('stopped','Playback could not start');}}
+ finally{if(token===storyPlaybackToken){if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}if(storyPlaybackState!=='paused')updateStoryPlayer('finished','Playback finished');document.querySelectorAll('.story-sentence.is-speaking').forEach(x=>x.classList.remove('is-speaking'));}}
 }
 function playStoryParagraph(i){const at=currentStorySentences.findIndex(x=>x.paragraphIndex===i);if(at>=0)playStorySentences(at,'paragraph');}
-function toggleStoryPlayback(){if(storyPlaybackState==='playing'){if((settings.germanVoiceMode||'system')==='system'){speechSynthesis.pause();updateStoryPlayer('paused','Paused');}else{const at=currentStorySentenceIndex;++storyPlaybackToken;terminateNeuralWorker();if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}currentStorySentenceIndex=at;updateStoryPlayer('paused','Paused · resume starts at this sentence');}return;}if(storyPlaybackState==='paused'){if((settings.germanVoiceMode||'system')==='system'&&speechSynthesis.speaking){speechSynthesis.resume();updateStoryPlayer('playing','Playing');}else playStorySentences(currentStorySentenceIndex);return;}playStorySentences(0);}
-function stopStoryPlayback(){storyPlaybackToken++;if('speechSynthesis'in window)speechSynthesis.cancel();terminateNeuralWorker();if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}document.querySelectorAll('.story-sentence.is-speaking').forEach(x=>x.classList.remove('is-speaking'));currentStorySentenceIndex=0;updateStoryPlayer('stopped','Stopped · ready from the beginning');}
+function toggleStoryPlayback(){
+ if(storyPlaybackState==='playing'){
+  if((settings.germanVoiceMode||'system')==='system'){speechSynthesis.pause();updateStoryPlayer('paused','Paused');}
+  else if(pauseNeuralSpeech())updateStoryPlayer('paused','Paused');
+  else stopStoryPlayback();
+  return;
+ }
+ if(storyPlaybackState==='paused'){
+  if((settings.germanVoiceMode||'system')==='system'&&speechSynthesis.speaking){speechSynthesis.resume();updateStoryPlayer('playing','Playing');}
+  else if((settings.germanVoiceMode||'system')!=='system'&&resumeNeuralSpeech())updateStoryPlayer('playing','Playing');
+  else playStorySentences(currentStorySentenceIndex);
+  return;
+ }
+ playStorySentences(0);
+}
+function stopStoryPlayback(){
+ storyPlaybackToken++;
+ if('speechSynthesis'in window)speechSynthesis.cancel();
+ stopNeuralSpeech();
+ if(storyEstimateTimer){clearInterval(storyEstimateTimer);storyEstimateTimer=null;}
+ document.querySelectorAll('.story-sentence.is-speaking').forEach(x=>x.classList.remove('is-speaking'));
+ currentStorySentenceIndex=0;
+ updateStoryPlayer('stopped','Stopped · ready from the beginning');
+}
 async function completeStoryChapter(){const id=currentStoryChapter?.id;if(!id)return;const old=storyProgress.find(x=>x.chapterId===id)||{id,storyId:currentStory.id,chapterId:id};await put('storyProgress',{...old,completed:true,completedAt:new Date().toISOString()});storyProgress=await all('storyProgress');$('storyCompleteChapter').textContent='Completed ✓';renderStories();toast('Chapter completed. Review schedules were not changed.');}
 
 async function init(){
