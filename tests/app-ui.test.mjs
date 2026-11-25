@@ -127,7 +127,7 @@ test('Stories has explicit continuous narration controls and playback state',()=
  assert.ok(app.includes('speechSynthesis.pause()'));
  assert.ok(app.includes('speechSynthesis.resume()'));
  assert.doesNotMatch(app,/waitStory\\(560,token\\)/);
- assert.ok(app.includes("speakNeuralSegments(voice,plan.segments,rate,stage"));
+ assert.ok(app.includes("speakNeuralSegments(voice,plan.segments,rate,event"));
 });
 test('Story vocabulary popups remove universal underlines and support dictionary-form confirmation',async()=>{
  const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
