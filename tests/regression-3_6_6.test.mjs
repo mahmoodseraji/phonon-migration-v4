@@ -42,7 +42,7 @@ test('swipe classes are reset for each card and the swipe animation is not overr
   assert.match(css, /#studyCard\.swipe-left \.study-card-scene/);
 });
 
-test('service worker cache is versioned 3.9.0 and navigation ignores query strings', () => {
+test('service worker cache is versioned 3.10.1 and navigation ignores query strings', () => {
   assert.match(sw, /deutsch-meister-v3\.10\.0/);
   assert.match(sw, /ignoreSearch/);
 });
