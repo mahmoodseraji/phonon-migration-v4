@@ -223,7 +223,8 @@ test('noun flashcard autoplay and manual pronunciation share the article-aware s
  assert.match(app,/studyPronunciationText\(currentWord\|\|\{\}\)/);
 });
 
-test('vocabulary editor keeps every present-tense conjugation in a compact Person/Präsens table',()=>{
+test('vocabulary editor keeps every present-tense conjugation in a compact Person/Präsens table',async()=>{
+ const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
  assert.match(html,/<table class="verb-conjugation-table">/);
  assert.match(html,/<th scope="col">Person<\/th><th scope="col">Präsens<\/th>/);
  for(const id of ['fieldPresentIch','fieldPresentDu','fieldPresentEr','fieldPresentWir','fieldPresentIhr','fieldPresentSie'])assert.match(html,new RegExp('id="'+id+'"'));
@@ -238,7 +239,8 @@ test('editor inputs and textareas retain a non-zooming 16px focus size',async()=
  assert.match(css,/#wordEditorDialog input\.field:focus[^}]*transform:none/);
 });
 
-test('flashcard edit control occupies a dedicated toolbar row above vocabulary content',()=>{
+test('flashcard edit control occupies a dedicated toolbar row above vocabulary content',async()=>{
+ const css=await readFile(new URL('../css/app.css',import.meta.url),'utf8');
  const back=html.slice(html.indexOf('class="study-card-face study-card-back"'),html.indexOf('</section>',html.indexOf('class="study-card-face study-card-back"')));
  assert.ok(back.indexOf('study-card-back-tools')<back.indexOf('id="studyAnswer"'));
  assert.match(css,/\.study-card-back-tools\{display:flex/);
