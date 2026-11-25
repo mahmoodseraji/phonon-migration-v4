@@ -293,22 +293,83 @@ function trimNarrationSilence(samples, threshold = 0.0018, tailSamples = 900) {
   return samples.slice(first, Math.min(samples.length, last + 1 + tailSamples));
 }
 
+function wakeSequence(sequence) {
+  const waiters = sequence.queueWaiters.splice(0);
+  for (const wake of waiters) wake();
+}
+
+function waitForSequenceChange(sequence) {
+  return new Promise(resolve => sequence.queueWaiters.push(resolve));
+}
+
+async function takeSequenceBuffer(sequence) {
+  while (!sequence.cancelled) {
+    if (sequence.queue.length) return sequence.queue.shift();
+    if (sequence.producerDone) {
+      if (sequence.error) throw sequence.error;
+      return null;
+    }
+    await waitForSequenceChange(sequence);
+  }
+  return null;
+}
+
+async function waitUntilSequenceResumes(sequence) {
+  while (sequence.paused && !sequence.cancelled) await waitForSequenceChange(sequence);
+  return !sequence.cancelled;
+}
+
+function startSequenceChunk(sequence) {
+  const playback = sequence.currentPlayback;
+  if (!playback || sequence.paused || sequence.cancelled || activeSequence !== sequence) return;
+  const source = sequence.context.createBufferSource();
+  source.buffer = playback.buffer;
+  source.connect(sequence.context.destination);
+  playback.source = source;
+  playback.startedAt = sequence.context.currentTime;
+  source.onended = () => {
+    if (activeSequence !== sequence || sequence.cancelled || sequence.paused || sequence.currentPlayback !== playback) return;
+    playback.source = null;
+    sequence.currentPlayback = null;
+    playback.resolve();
+  };
+  try {
+    source.start(0, playback.offset);
+  } catch (error) {
+    playback.source = null;
+    sequence.currentPlayback = null;
+    playback.reject(error);
+  }
+}
+
+function playSequenceBuffer(sequence, buffer) {
+  return new Promise((resolve, reject) => {
+    sequence.currentPlayback = { buffer, offset: 0, startedAt: 0, source: null, resolve, reject };
+    startSequenceChunk(sequence);
+  });
+}
+
+/**
+ * Stream story narration: synthesize one manageable chunk at a time, begin as soon
+ * as the first chunk is ready, and keep a small queue ahead of the audio output.
+ * This avoids waiting for an entire chapter to be synthesized before playback.
+ */
 export async function speakNeuralSegments(voiceId, segments, rate = 0.88, onStage = () => {}) {
   const voice = assertVoice(voiceId, 'de');
   const sourceSegments = (Array.isArray(segments) ? segments : [segments])
-    .flatMap(segment => splitLongNarration(segment))
+    .flatMap(segment => splitLongNarration(segment, 850))
     .filter(segment => segment.trim());
   if (!sourceSegments.length) throw new Error('There is no story text to pronounce.');
   const totalCharacters = sourceSegments.reduce((sum, segment) => sum + segment.length, 0);
-  if (totalCharacters > 16000) throw new Error('This chapter is too long for one Phonon reading session. Please read a shorter section.');
+  if (totalCharacters > 24000) throw new Error('This chapter is too long for one Phonon reading session. Please listen paragraph by paragraph.');
 
   const token = ++speechSequence;
   stopCurrentAudio();
-  stopActiveSequence();
   const context = getAudioContext();
   if (!context) throw new Error('Web Audio is not available in this browser. Choose System voice in Settings.');
-  const resumePromise = context.state === 'suspended' ? context.resume() : Promise.resolve();
 
+  // Unlock/resume Web Audio immediately in the Play button's original tap gesture.
+  const unlockPromise = context.state === 'suspended' ? context.resume() : Promise.resolve();
   onStage('Loading the selected Phonon voice');
   const tts = await loadTts(voiceId, progress => {
     const file = progress?.file || 'voice files';
@@ -317,49 +378,69 @@ export async function speakNeuralSegments(voiceId, segments, rate = 0.88, onStag
   });
   if (token !== speechSequence) return;
 
-  const rendered = [];
-  let sampleRate = 0;
-  for (let index = 0; index < sourceSegments.length; index++) {
-    if (token !== speechSequence) return;
-    onStage('Preparing story audio · ' + (index + 1) + '/' + sourceSegments.length);
-    const wav = await tts.synthWav(sourceSegments[index], { voice: voice.name });
-    if (token !== speechSequence) return;
-    const decoded = await context.decodeAudioData(await wav.arrayBuffer());
-    if (!sampleRate) sampleRate = decoded.sampleRate;
-    if (decoded.sampleRate !== sampleRate) throw new Error('Phonon returned inconsistent audio sample rates.');
-    const stretched = timeStretchPcm(decoded.getChannelData(0), rate, sampleRate);
-    rendered.push(trimNarrationSilence(stretched));
-  }
-  if (token !== speechSequence) return;
+  const sequence = {
+    context, queue: [], queueWaiters: [], producerDone: false, error: null,
+    cancelled: false, paused: false, currentPlayback: null, completedChunks: 0,
+    totalChunks: sourceSegments.length, resolve: null, reject: null
+  };
+  activeSequence = sequence;
 
-  await resumePromise;
-  if (context.state !== 'running') throw new Error('iOS audio context is ' + context.state + '; playback could not start.');
-  const paragraphGap = Math.round(sampleRate * 0.09);
-  const totalSamples = rendered.reduce((sum, samples) => sum + samples.length, 0) + Math.max(0, rendered.length - 1) * paragraphGap;
-  const combined = new Float32Array(totalSamples);
-  let cursor = 0;
-  rendered.forEach((samples, index) => {
-    combined.set(samples, cursor);
-    cursor += samples.length + (index < rendered.length - 1 ? paragraphGap : 0);
-  });
-  const buffer = context.createBuffer(1, combined.length, sampleRate);
-  buffer.copyToChannel(combined, 0);
-  onStage('Playing Phonon audio');
-  await new Promise(resolve => {
-    const sequence = { context, buffer, offset: 0, startedAt: 0, source: null, paused: false, cancelled: false, resolve };
-    activeSequence = sequence;
-    startSequenceAt(sequence);
-  });
+  const producer = (async () => {
+    try {
+      for (let index = 0; index < sourceSegments.length; index++) {
+        if (token !== speechSequence || sequence.cancelled) break;
+        const wav = await tts.synthWav(sourceSegments[index], { voice: voice.name });
+        if (token !== speechSequence || sequence.cancelled) break;
+        const decoded = await context.decodeAudioData(await wav.arrayBuffer());
+        const stretched = timeStretchPcm(decoded.getChannelData(0), rate, decoded.sampleRate);
+        const samples = trimNarrationSilence(stretched);
+        const buffer = context.createBuffer(1, samples.length, decoded.sampleRate);
+        buffer.copyToChannel(samples, 0);
+        sequence.queue.push({ buffer, index: index + 1 });
+        wakeSequence(sequence);
+      }
+    } catch (error) {
+      sequence.error = error;
+    } finally {
+      sequence.producerDone = true;
+      wakeSequence(sequence);
+    }
+  })();
+
+  try {
+    await unlockPromise;
+    while (!sequence.cancelled) {
+      const item = await takeSequenceBuffer(sequence);
+      if (!item || sequence.cancelled) break;
+      if (!(await waitUntilSequenceResumes(sequence))) break;
+      if (context.state === 'suspended') await context.resume();
+      if (context.state !== 'running') throw new Error('iOS audio context is ' + context.state + '; playback could not start.');
+      if (sequence.cancelled) break;
+      onStage('Playing Phonon audio · ' + item.index + '/' + sequence.totalChunks);
+      await playSequenceBuffer(sequence, item.buffer);
+      sequence.completedChunks = item.index;
+    }
+    await producer;
+    if (!sequence.cancelled && sequence.error) throw sequence.error;
+  } finally {
+    if (activeSequence === sequence) activeSequence = null;
+    sequence.cancelled = true;
+    wakeSequence(sequence);
+  }
 }
 
 export function pauseNeuralSpeech() {
   const sequence = activeSequence;
-  if (!sequence || sequence.paused || sequence.cancelled || !sequence.source) return false;
-  sequence.offset = Math.min(sequence.buffer.duration, sequence.offset + sequence.context.currentTime - sequence.startedAt);
+  if (!sequence || sequence.paused || sequence.cancelled) return false;
   sequence.paused = true;
-  sequence.source.onended = null;
-  try { sequence.source.stop(); } catch { /* already stopped */ }
-  sequence.source = null;
+  const playback = sequence.currentPlayback;
+  if (playback?.source) {
+    playback.offset = Math.min(playback.buffer.duration,
+      playback.offset + sequence.context.currentTime - playback.startedAt);
+    playback.source.onended = null;
+    try { playback.source.stop(); } catch { /* already stopped */ }
+    playback.source = null;
+  }
   return true;
 }
 
@@ -369,8 +450,15 @@ export function resumeNeuralSpeech() {
   sequence.paused = false;
   const resume = sequence.context.state === 'suspended' ? sequence.context.resume() : Promise.resolve();
   resume.then(() => {
-    if (activeSequence === sequence && !sequence.cancelled && !sequence.paused) startSequenceAt(sequence);
-  }).catch(() => {});
+    if (activeSequence !== sequence || sequence.cancelled || sequence.paused) return;
+    if (sequence.currentPlayback) startSequenceChunk(sequence);
+    wakeSequence(sequence);
+  }).catch(error => {
+    sequence.error = error;
+    sequence.producerDone = true;
+    wakeSequence(sequence);
+  });
+  wakeSequence(sequence);
   return true;
 }
 
