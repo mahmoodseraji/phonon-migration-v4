@@ -177,3 +177,21 @@ test('Story word popup closes on outside tap and Escape without closing when tap
  assert.match(app,/event\.key==='Escape'/);
  assert.match(app,/wordPopup\.addEventListener\('pointerdown'.*stopPropagation/);
 });
+
+
+test('Story Phonon narration uses a continuous plain-text stream without paragraph newline tokens',()=>{
+ assert.match(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join\(' '\)/);
+ assert.match(app,/globalOffset\+=p\.length\+1/);
+ assert.doesNotMatch(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join\('\\n\\n'\)/);
+});
+test('Separable verb particles are not matched as standalone vocabulary words',()=>{
+ const normalizeSource=app.match(/function normaliseStoryWord\(value\)\{[^}]+\}/)?.[0];
+ const formsSource=app.match(/function storyFieldForms\(value\)\{[\s\S]*?\n\}/)?.[0];
+ assert.ok(normalizeSource);assert.ok(formsSource);
+ const normaliseStoryWord=new Function(normalizeSource+';return normaliseStoryWord')();
+ const storyFieldForms=new Function('normaliseStoryWord',formsSource+';return storyFieldForms')(normaliseStoryWord);
+ assert.ok(storyFieldForms('fordert auf').includes('fordert auf'));
+ assert.ok(storyFieldForms('fordert auf').includes('fordert'));
+ assert.ok(!storyFieldForms('fordert auf').includes('auf'));
+ assert.ok(storyFieldForms('ist gegangen').includes('gegangen'));
+});
