@@ -21,7 +21,7 @@ test('Phonon Stories stream manageable chunks while playback proceeds instead of
   assert.match(voice, /trimNarrationSilence/);
   assert.match(voice, /const producer = \(async \(\) => \{/);
   assert.match(voice, /async function takeSequenceBuffer/);
-  assert.match(voice, /sequence\.queue\.push\(\{ buffer, index: index \+ 1 \}\)/);
+  assert.match(voice, /sequence\.queue\.push\(\{ buffer, text: sourceSegments\[index\], index: index \+ 1 \}\)/);
   assert.match(voice, /await playSequenceBuffer\(sequence, item\.buffer\)/);
   assert.doesNotMatch(voice, /const rendered = \[\]/);
   assert.match(voice, /export function pauseNeuralSpeech/);
