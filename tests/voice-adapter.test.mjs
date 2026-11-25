@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { timeStretchPcm } from '../js/voice-manager.js';
 const manager=await readFile(new URL('../js/voice-manager.js',import.meta.url),'utf8');
 const app=await readFile(new URL('../js/app.js',import.meta.url),'utf8');
 const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');
@@ -38,4 +39,16 @@ test('uses the official API and Web Audio playback',()=>{
 test('service worker precaches the vendored runtime',()=>{
  for(const file of ['index.js','worker.js','phonon_tts_simd_bg.wasm'])assert.ok(sw.includes(file),file);
  assert.match(sw,/deutsch-meister-v3\.10\.0/);
+});
+
+test('Phonon speed adjustment changes duration without shifting the original pitch',()=>{
+ const sampleRate=24000,frequency=440,duration=1.2,input=new Float32Array(sampleRate*duration);
+ for(let i=0;i<input.length;i++)input[i]=Math.sin(2*Math.PI*frequency*i/sampleRate);
+ for(const rate of [0.75,1.2]){
+  const output=timeStretchPcm(input,rate,sampleRate);
+  assert.ok(Math.abs(output.length/input.length-1/rate)<0.01);
+  let crossings=0;for(let i=1;i<output.length;i++)if(output[i-1]<=0&&output[i]>0)crossings++;
+  const measured=crossings/(output.length/sampleRate);
+  assert.ok(Math.abs(measured-frequency)<8, 'expected pitch near 440 Hz, got '+measured);
+ }
 });
