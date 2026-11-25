@@ -185,8 +185,8 @@ test('Story Phonon narration uses a continuous plain-text stream without paragra
  assert.doesNotMatch(app,/currentStoryNarrationText=currentStoryChapter\.paragraphs\.join\('\\n\\n'\)/);
 });
 test('Separable verb particles are not matched as standalone vocabulary words',()=>{
- const normalizeSource=app.match(/function normaliseStoryWord\(value\)\{[^}]+\}/)?.[0];
- const formsSource=app.match(/function storyFieldForms\(value\)\{[\s\S]*?\n\}/)?.[0];
+ const normalizeSource=app.match(/function normaliseStoryWord\\(value\\)\\{[^\\n]+/)?.[0];
+ const formsSource=app.match(/function storyFieldForms\\(value\\)\\{[^\\n]+/)?.[0];
  assert.ok(normalizeSource);assert.ok(formsSource);
  const normaliseStoryWord=new Function(normalizeSource+';return normaliseStoryWord')();
  const storyFieldForms=new Function('normaliseStoryWord','STORY_SEPARABLE_PARTICLES',formsSource+';return storyFieldForms')(normaliseStoryWord,new Set(['ab','an','auf','aus','bei','da','ein','fort','her','hin','los','mit','nach','vor','weg','zu','zurück']));
